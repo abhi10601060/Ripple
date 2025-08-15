@@ -1,0 +1,367 @@
+package com.app.ripple.data.nearby
+
+import android.annotation.SuppressLint
+import android.content.Context
+import android.util.Log
+import com.app.ripple.data.nearby.model.ClusterInfo
+import com.app.ripple.data.nearby.model.ConnectionState
+import com.app.ripple.data.nearby.model.DeliveryStatus
+import com.app.ripple.data.nearby.model.NearbyDevice
+import com.app.ripple.data.nearby.model.TextMessage
+import com.google.android.gms.nearby.Nearby
+import com.google.android.gms.nearby.connection.AdvertisingOptions
+import com.google.android.gms.nearby.connection.ConnectionInfo
+import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback
+import com.google.android.gms.nearby.connection.ConnectionResolution
+import com.google.android.gms.nearby.connection.ConnectionsClient
+import com.google.android.gms.nearby.connection.ConnectionsStatusCodes
+import com.google.android.gms.nearby.connection.DiscoveredEndpointInfo
+import com.google.android.gms.nearby.connection.DiscoveryOptions
+import com.google.android.gms.nearby.connection.EndpointDiscoveryCallback
+import com.google.android.gms.nearby.connection.Payload
+import com.google.android.gms.nearby.connection.PayloadCallback
+import com.google.android.gms.nearby.connection.PayloadTransferUpdate
+import com.google.android.gms.nearby.connection.Strategy
+import com.google.android.gms.tasks.Task
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resumeWithException
+
+class NearbyShareManager private constructor(private val context: Context) {
+
+    private val TAG = "NearbyShareManager"
+
+    companion object {
+        @SuppressLint("StaticFieldLeak")
+        @Volatile
+        private var INSTANCE: NearbyShareManager? = null
+
+        fun getInstance(context: Context): NearbyShareManager {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: NearbyShareManager(context.applicationContext).also { INSTANCE = it }
+            }
+        }
+    }
+
+    private val _discoveredDevices = MutableStateFlow<List<NearbyDevice>>(emptyList())
+    private val _connectedDevices = MutableStateFlow<List<NearbyDevice>>(emptyList())
+    private val _receivedMessages = MutableStateFlow<List<TextMessage>>(emptyList())
+    private val _sentMessages = MutableStateFlow<List<TextMessage>>(emptyList())
+    private val _clusterInfo = MutableStateFlow<ClusterInfo?>(null)
+    private val _advertisingState = MutableStateFlow(false)
+    private val _discoveryState = MutableStateFlow(false)
+
+    // State accessors
+    val discoveredDevices: StateFlow<List<NearbyDevice>> = _discoveredDevices.asStateFlow()
+    val connectedDevices: StateFlow<List<NearbyDevice>> = _connectedDevices.asStateFlow()
+    val receivedMessages: StateFlow<List<TextMessage>> = _receivedMessages.asStateFlow()
+    val sentMessages: StateFlow<List<TextMessage>> = _sentMessages.asStateFlow()
+    val clusterInfo: StateFlow<ClusterInfo?> = _clusterInfo.asStateFlow()
+    val isAdvertising: StateFlow<Boolean> = _advertisingState.asStateFlow()
+    val isDiscovering: StateFlow<Boolean> = _discoveryState.asStateFlow()
+
+    // Nearby Connections API client
+    private val connectionsClient: ConnectionsClient = Nearby.getConnectionsClient(context)
+
+    private val deviceName = android.os.Build.MODEL
+    private val serviceId = "com.app.ripple"
+
+    // Connection lifecycle callbacks
+    private val connectionLifecycleCallback = object : ConnectionLifecycleCallback() {
+        override fun onConnectionInitiated(endpointId: String, info: ConnectionInfo) {
+            Log.d("NearbyShare", "Connection initiated with: ${info.endpointName}")
+            connectionsClient.acceptConnection(endpointId, payloadCallback)
+        }
+
+        override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
+            when (result.status.statusCode) {
+                ConnectionsStatusCodes.STATUS_OK -> {
+                    Log.d("NearbyShare", "Connected to: $endpointId")
+                    updateDeviceConnectionState(endpointId, ConnectionState.CONNECTED)
+                }
+                ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
+                    Log.d("NearbyShare", "Connection rejected: $endpointId")
+                    updateDeviceConnectionState(endpointId, ConnectionState.ERROR)
+                }
+                else -> {
+                    Log.d("NearbyShare", "Connection failed: $endpointId")
+                    updateDeviceConnectionState(endpointId, ConnectionState.ERROR)
+                }
+            }
+        }
+
+        override fun onDisconnected(endpointId: String) {
+            Log.d("NearbyShare", "Disconnected from: $endpointId")
+            updateDeviceConnectionState(endpointId, ConnectionState.DISCONNECTED)
+        }
+    }
+
+    // Endpoint discovery callbacks
+    private val endpointDiscoveryCallback = object : EndpointDiscoveryCallback() {
+        override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
+            Log.d("NearbyShare", "Endpoint found: ${info.endpointName}")
+            val device = NearbyDevice(
+                deviceId = endpointId,
+                deviceName = info.endpointName,
+                connectionState = ConnectionState.DISCOVERED
+            )
+            addDiscoveredDevice(device)
+        }
+
+        override fun onEndpointLost(endpointId: String) {
+            Log.d("NearbyShare", "Endpoint lost: $endpointId")
+            removeDiscoveredDevice(endpointId)
+        }
+    }
+
+    // Payload callbacks for handling messages
+    private val payloadCallback = object : PayloadCallback() {
+        override fun onPayloadReceived(endpointId: String, payload: Payload) {
+            if (payload.type == Payload.Type.BYTES) {
+                val messageContent = String(payload.asBytes()!!, Charsets.UTF_8)
+                val message = TextMessage(
+                    content = messageContent,
+                    senderId = endpointId,
+                    receiverId = deviceName,
+                    deliveryStatus = DeliveryStatus.DELIVERED
+                )
+                addReceivedMessage(message)
+                Log.d("NearbyShare", "Message received: ${message}")
+            }
+        }
+
+        override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
+            when (update.status) {
+                PayloadTransferUpdate.Status.SUCCESS -> {
+                    Log.d("NearbyShare", "Payload transfer successful")
+                    updateMessageDeliveryStatus(endpointId, DeliveryStatus.DELIVERED)
+                }
+                PayloadTransferUpdate.Status.FAILURE -> {
+                    Log.d("NearbyShare", "Payload transfer failed")
+                    updateMessageDeliveryStatus(endpointId, DeliveryStatus.FAILED)
+                }
+                PayloadTransferUpdate.Status.IN_PROGRESS -> {
+                    Log.d("NearbyShare", "Payload transfer in progress")
+                }
+            }
+        }
+    }
+
+    // Public API Methods
+    fun startAdvertising(): Flow<Boolean> = flow {
+        val options = AdvertisingOptions.Builder()
+            .setStrategy(Strategy.P2P_CLUSTER)
+            .build()
+
+        try {
+            val result = connectionsClient.startAdvertising(
+                deviceName,
+                serviceId,
+                connectionLifecycleCallback,
+                options
+            ).await()
+            Log.d(TAG, "startAdvertising: success : $result")
+            _advertisingState.value = true
+            emit(true)
+        }
+        catch (e : Exception){
+            Log.d(TAG, "startAdvertising: Error : ${e.message}")
+            _advertisingState.value = false
+            emit(false)
+        }
+
+    }
+
+    fun stopAdvertising(): Flow<Boolean> = flow {
+        connectionsClient.stopAdvertising()
+        _advertisingState.value = false
+        emit(true)
+    }
+
+    fun startDiscovery(): Flow<Boolean> = flow {
+        val options = DiscoveryOptions.Builder()
+            .setStrategy(Strategy.P2P_CLUSTER)
+            .build()
+
+        try {
+            val result = connectionsClient.startDiscovery(
+                serviceId,
+                endpointDiscoveryCallback,
+                options
+            ).await()
+            Log.d(TAG, "startDiscovery: Success")
+            _discoveryState.value = true
+            emit(true)
+        }
+        catch (e : Exception){
+            Log.d(TAG, "startDiscovery: Error : ${e.message}")
+            _discoveryState.value = false
+            emit(false)
+        }
+    }
+
+    fun stopDiscovery(): Flow<Boolean> = flow {
+        connectionsClient.stopDiscovery()
+        _discoveryState.value = false
+        emit(true)
+    }
+
+    fun connectToDevice(deviceId: String): Flow<Boolean> = flow {
+        updateDeviceConnectionState(deviceId, ConnectionState.CONNECTING)
+        try {
+            val result = connectionsClient.requestConnection(
+                deviceName,
+                deviceId,
+                connectionLifecycleCallback
+            ).await()
+            Log.d(TAG, "connectToDevice: Success")
+            emit(true)
+        }
+        catch (e : Exception){
+            Log.d(TAG, "connectToDevice: Error : ${e.message}")
+            emit(false)
+        }
+
+    }
+
+    fun disconnectFromDevice(deviceId: String): Flow<Boolean> = flow {
+        connectionsClient.disconnectFromEndpoint(deviceId)
+        updateDeviceConnectionState(deviceId, ConnectionState.DISCONNECTED)
+        emit(true)
+    }
+
+    fun sendTextMessage(message: TextMessage): Flow<Boolean> = flow {
+        val payload = Payload.fromBytes(message.content.toByteArray(Charsets.UTF_8))
+        try {
+            val result = connectionsClient.sendPayload(message.receiverId, payload).await()
+            addSentMessage(message.copy(deliveryStatus = DeliveryStatus.SENT))
+            Log.d(TAG, "sendTextMessage: Success")
+            emit(true)
+        }catch (e : Exception){
+            addSentMessage(message.copy(deliveryStatus = DeliveryStatus.FAILED))
+            Log.d(TAG, "sendTextMessage: Error : ${e.message}")
+            emit(false)
+        }
+    }
+
+    fun createCluster(): Flow<String> = flow {
+        val clusterId = java.util.UUID.randomUUID().toString()
+        val cluster = ClusterInfo(
+            clusterId = clusterId,
+            devices = listOf(NearbyDevice(deviceName, deviceName, ConnectionState.CONNECTED)),
+            isActive = true
+        )
+        _clusterInfo.value = cluster
+        emit(clusterId)
+    }
+
+    fun joinCluster(clusterId: String): Flow<Boolean> = flow {
+        // In a real implementation, you'd need to discover and connect to cluster members
+        val cluster = ClusterInfo(
+            clusterId = clusterId,
+            devices = _connectedDevices.value,
+            isActive = true
+        )
+        _clusterInfo.value = cluster
+        emit(true)
+    }
+
+    fun leaveCluster(): Flow<Boolean> = flow {
+        _clusterInfo.value = _clusterInfo.value?.copy(isActive = false)
+        // Disconnect from all devices in cluster
+        _connectedDevices.value.forEach { device ->
+            connectionsClient.disconnectFromEndpoint(device.deviceId)
+        }
+        _connectedDevices.value = emptyList()
+        emit(true)
+    }
+
+    // Private helper methods
+    private fun addDiscoveredDevice(device: NearbyDevice) {
+        val currentDevices = _discoveredDevices.value.toMutableList()
+        val existingIndex = currentDevices.indexOfFirst { it.deviceId == device.deviceId }
+        if (existingIndex >= 0) {
+            currentDevices[existingIndex] = device
+        } else {
+            currentDevices.add(device)
+        }
+        _discoveredDevices.value = currentDevices
+    }
+
+    private fun removeDiscoveredDevice(deviceId: String) {
+        _discoveredDevices.value = _discoveredDevices.value.filter { it.deviceId != deviceId }
+    }
+
+    private fun updateDeviceConnectionState(deviceId: String, state: ConnectionState) {
+        // Update in discovered devices
+        _discoveredDevices.value = _discoveredDevices.value.map { device ->
+            if (device.deviceId == deviceId) device.copy(connectionState = state) else device
+        }
+
+        // Update connected devices list
+        when (state) {
+            ConnectionState.CONNECTED -> {
+                val device = _discoveredDevices.value.find { it.deviceId == deviceId }
+                device?.let {
+                    val connectedList = _connectedDevices.value.toMutableList()
+                    if (!connectedList.any { it.deviceId == deviceId }) {
+                        connectedList.add(it.copy(connectionState = state))
+                        _connectedDevices.value = connectedList
+                    }
+                }
+            }
+            ConnectionState.DISCONNECTED -> {
+                _connectedDevices.value = _connectedDevices.value.filter { it.deviceId != deviceId }
+            }
+            else -> {
+                _connectedDevices.value = _connectedDevices.value.map { device ->
+                    if (device.deviceId == deviceId) device.copy(connectionState = state) else device
+                }
+            }
+        }
+    }
+
+    private fun addReceivedMessage(message: TextMessage) {
+//        GlobalScope.launch {
+//            val returnMessage = TextMessage(
+//                content = "Message received",
+//                senderId = deviceName,
+//                receiverId = message.senderId,
+//                deliveryStatus = DeliveryStatus.DELIVERED
+//            )
+//            sendTextMessage(returnMessage).collect {
+//                if (it) Log.d("NearbyShare", "Message sent successfully")
+//            }
+//        }
+        _receivedMessages.value = _receivedMessages.value + message
+    }
+
+    private fun addSentMessage(message: TextMessage) {
+        _sentMessages.value = _sentMessages.value + message
+    }
+
+    private fun updateMessageDeliveryStatus(endpointId: String, status: DeliveryStatus) {
+        _sentMessages.value = _sentMessages.value.map { message ->
+            if (message.receiverId == endpointId) message.copy(deliveryStatus = status) else message
+        }
+    }
+}
+
+suspend fun <T> Task<T>.await(): T {
+    return suspendCancellableCoroutine { cont ->
+        addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                cont.resume(task.result) { cause, _, _ -> }
+            } else {
+                cont.resumeWithException(task.exception ?: Exception("Unknown error"))
+            }
+        }
+    }
+}
