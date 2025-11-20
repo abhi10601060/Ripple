@@ -69,6 +69,14 @@ fun NearbyShareScreen(
             onLeaveCluster = {
                 viewModel.leaveCluster()
                 viewModel.stopAdvertising(); viewModel.stopDiscovery()
+            },
+            onAdvDisc = {
+                viewModel.startDiscovery();
+                viewModel.startAdvertising()
+            },
+            onStopAdvDisc = {
+                viewModel.stopDiscovery()
+                viewModel.stopAdvertising()
             }
         )
 
@@ -212,7 +220,9 @@ fun ControlButtonsSection(
     onStartDiscovery: () -> Unit,
     onStopDiscovery: () -> Unit,
     onCreateCluster: () -> Unit,
-    onLeaveCluster: () -> Unit
+    onLeaveCluster: () -> Unit,
+    onAdvDisc: () -> Unit,
+    onStopAdvDisc: () -> Unit
 ) {
     val isAdvertising = uiState is NearbyShareUiState.Advertising
     val isDiscovering = uiState is NearbyShareUiState.Discovering
@@ -267,6 +277,29 @@ fun ControlButtonsSection(
                     enabled = !isLoading,
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.secondary
+                )
+            }
+        }
+
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ActionButton(
+                    text = "Start Adv + Disc",
+                    icon = Icons.Default.Wifi,
+                    onClick = onAdvDisc,
+                    enabled = !isLoading,
+                    modifier = Modifier.weight(1f)
+                )
+
+                ActionButton(
+                    text = "Stop Adv + Disc",
+                    icon = Icons.Default.Stop,
+                    onClick = onStopAdvDisc,
+                    enabled = !isLoading,
+                    modifier = Modifier.weight(1f)
                 )
             }
         }

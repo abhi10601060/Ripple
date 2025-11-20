@@ -3,6 +3,7 @@ package com.app.ripple.data.nearby
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.mutableStateMapOf
 import com.app.ripple.data.nearby.model.ClusterInfo
 import com.app.ripple.data.nearby.model.ConnectionState
 import com.app.ripple.data.nearby.model.DeliveryStatus
@@ -37,6 +38,7 @@ import kotlin.coroutines.resumeWithException
 class NearbyShareManager private constructor(private val context: Context) {
 
     private val TAG = "NearbyShareManager"
+    private val connectionPool = mutableStateMapOf<String, String>()
 
     companion object {
         @SuppressLint("StaticFieldLeak")
@@ -78,6 +80,7 @@ class NearbyShareManager private constructor(private val context: Context) {
         override fun onConnectionInitiated(endpointId: String, info: ConnectionInfo) {
             Log.d("NearbyShare", "Connection initiated with: ${info.endpointName}")
             connectionsClient.acceptConnection(endpointId, payloadCallback)
+            connectionPool.put(endpointId, info.endpointName)
         }
 
         override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
@@ -100,6 +103,7 @@ class NearbyShareManager private constructor(private val context: Context) {
         override fun onDisconnected(endpointId: String) {
             Log.d("NearbyShare", "Disconnected from: $endpointId")
             updateDeviceConnectionState(endpointId, ConnectionState.DISCONNECTED)
+            connectionPool.remove(endpointId)
         }
     }
 
