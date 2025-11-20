@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import com.app.ripple.di.Test
+import com.app.ripple.presentation.screen.audio_test.AudioRecorderScreen
 import com.app.ripple.presentation.screen.message.NearbyShareScreen
 import com.app.ripple.presentation.ui.theme.RippleTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,14 +51,14 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NearbyShareScreen(modifier = Modifier.padding(innerPadding))
+//                    AudioRecorderScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
     }
 
     fun checkPermissions() : Boolean{
-        val permissionList = getPerMissionList()
-        permissionList.forEach {
+        PERMISSION_LIST.forEach {
             if (checkSelfPermission(it) == PackageManager.PERMISSION_DENIED) return false
         }
         return true

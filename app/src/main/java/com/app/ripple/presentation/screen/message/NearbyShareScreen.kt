@@ -60,14 +60,14 @@ fun NearbyShareScreen(
             onStartAdvertising = { viewModel.startAdvertising(); viewModel.startDiscovery() },
             onStopAdvertising = { viewModel.stopAdvertising() },
             onStartDiscovery = {
-//                viewModel.startDiscovery()
+                viewModel.startDiscovery()
                 },
             onStopDiscovery = {
-//                viewModel.stopDiscovery()
+                viewModel.stopDiscovery()
                 },
             onCreateCluster = { viewModel.createCluster() },
             onLeaveCluster = {
-//                viewModel.leaveCluster()
+                viewModel.leaveCluster()
                 viewModel.stopAdvertising(); viewModel.stopDiscovery()
             }
         )
@@ -82,7 +82,7 @@ fun NearbyShareScreen(
 
         // Tabs for different sections
         var selectedTab by remember { mutableStateOf(0) }
-        val tabs = listOf("Discovered", "Connected", "Messages")
+        val tabs = listOf("Discovered", "Connected", "Messages", "Voice Chat")
 
         TabRow(selectedTabIndex = selectedTab) {
             tabs.forEachIndexed { index, title ->
@@ -115,6 +115,9 @@ fun NearbyShareScreen(
                 }
             )
             2 -> MessagesSection(messages = messages)
+            3 -> VoiceChatSection(
+                
+            )
         }
     }
 
@@ -137,6 +140,7 @@ fun NearbyShareScreen(
         )
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -420,6 +424,11 @@ fun MessagesSection(messages: List<TextMessage>) {
             }
         }
     }
+}
+
+@Composable
+fun VoiceChatSection() {
+    TODO("Not yet implemented")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

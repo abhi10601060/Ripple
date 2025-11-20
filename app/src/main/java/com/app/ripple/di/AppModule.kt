@@ -1,6 +1,7 @@
 package com.app.ripple.di
 
 import android.content.Context
+import com.app.ripple.data.audio_recording.AudioRecordingManager
 import com.app.ripple.data.repo.NearbyShareRepoImpl
 import com.app.ripple.domain.repo.NearbyShareRepo
 import dagger.Module
@@ -23,6 +24,12 @@ object AppModule {
     @Singleton
     fun getRepo(@ApplicationContext context: Context) : NearbyShareRepo{
         return NearbyShareRepoImpl(context)
+    }
+
+    @Provides
+    @Singleton
+    fun providesAudioManager(@ApplicationContext context: Context): AudioRecordingManager {
+        return AudioRecordingManager.getInstance(context)
     }
 }
 
