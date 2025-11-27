@@ -13,4 +13,4 @@ val Pink40 = Color(0xFF7D5260)
 
 val DarkBG = Color(0xFF141414)
 val SecondaryDarkBG = Color(0xFF282828)
-val tertiaryDarkBG = Color(0xFF626262)
+val TertiaryDarkBG = Color(0xFF626262)
