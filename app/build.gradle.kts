@@ -84,4 +84,8 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+
+    // Google Font
+    implementation ("androidx.compose.ui:ui-text-google-fonts:1.9.5")
+
 }

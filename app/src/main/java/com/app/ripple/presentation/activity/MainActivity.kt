@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat
 import com.app.ripple.di.Test
 import com.app.ripple.presentation.screen.audio_test.AudioRecorderScreen
 import com.app.ripple.presentation.screen.message.NearbyShareScreen
+import com.app.ripple.presentation.screen.splash.SplashScreen
 import com.app.ripple.presentation.ui.theme.RippleTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -50,7 +51,8 @@ class MainActivity : ComponentActivity() {
                 }
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    NearbyShareScreen(modifier = Modifier.padding(innerPadding))
+                    SplashScreen(modifier =  Modifier.padding(innerPadding))
+//                    NearbyShareScreen(modifier = Modifier.padding(innerPadding))
 //                    AudioRecorderScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
