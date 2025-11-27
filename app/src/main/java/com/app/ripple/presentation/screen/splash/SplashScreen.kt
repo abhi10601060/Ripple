@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.app.ripple.R
 import com.app.ripple.presentation.navigation.garph.HomeScreenRoute
+import com.app.ripple.presentation.shared.RippleLogo
 import com.app.ripple.presentation.shared.RippleTextButton
 import com.app.ripple.presentation.shared.RippleTextField
 import com.app.ripple.presentation.ui.theme.CourierPrimeFamily
@@ -57,11 +58,7 @@ fun SplashScreen(
                 .align(alignment = Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(R.drawable.whiteripple),
-                contentDescription = "Ripple logo",
-                modifier = Modifier.size(100.dp)
-            )
+            RippleLogo(size = 100.dp)
 
             Spacer(modifier = Modifier.height(20.dp))
 

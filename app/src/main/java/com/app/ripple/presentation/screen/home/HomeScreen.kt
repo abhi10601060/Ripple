@@ -1,11 +1,14 @@
 package com.app.ripple.presentation.screen.home
 
+import android.icu.text.CaseMap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -24,12 +27,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.app.ripple.presentation.screen.active_users.ActiveUsersScreen
+import com.app.ripple.presentation.screen.inbox.InboxScreen
 import com.app.ripple.presentation.shared.BottomTitledIcon
+import com.app.ripple.presentation.shared.RippleLogo
 import com.app.ripple.presentation.ui.theme.DarkBG
+import com.app.ripple.presentation.ui.theme.MontserratFamily
 import com.app.ripple.presentation.ui.theme.SecondaryDarkBG
 
 @Composable
@@ -47,17 +55,54 @@ fun HomeScreen(
             .fillMaxSize()
             .background(color = DarkBG),
     ) {
-        Text(text = "Home Screen", color = Color.White, fontSize = 30.sp)
+
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            HomeScreenHeader(
+                title = activeTab.title
+            )
+
+            if (activeTab == HomeTab.CHATS){
+                InboxScreen()
+            }
+            else{
+                ActiveUsersScreen()
+            }
+        }
 
         HomeScreenNavigationBottomBar(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 20.dp)
+                .padding(bottom = 10.dp)
                 .padding(horizontal = 20.dp),
             activeHomeTab = activeTab,
             onTabClick = {
                 activeTab = it
             }
+        )
+    }
+}
+
+@Composable
+fun HomeScreenHeader(
+    title: String = "RIPPLE"
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RippleLogo(size = 40.dp)
+
+        Spacer(modifier = Modifier.width(15.dp))
+
+        Text(
+            text = title,
+            fontFamily = MontserratFamily,
+            fontSize = 30.sp,
+            color = Color.White,
+            fontWeight = FontWeight.ExtraBold
         )
     }
 }
@@ -119,9 +164,9 @@ fun HomeScreenNavigationBottomBar(
     }
 }
 
-enum class HomeTab {
-    CHATS,
-    ACTIVE
+enum class HomeTab(val title : String) {
+    CHATS(title = "Chats"),
+    ACTIVE(title = "Actives")
 }
 
 @Preview

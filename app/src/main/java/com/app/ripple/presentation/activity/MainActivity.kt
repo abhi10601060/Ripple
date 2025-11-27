@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun App(modifier: Modifier){
         val navController = rememberNavController()
-        NavHost(navController = navController, startDestination = MainNavGraphRoute){
+        NavHost(modifier = modifier, navController = navController, startDestination = MainNavGraphRoute){
             mainGraph(navController = navController)
         }
     }
