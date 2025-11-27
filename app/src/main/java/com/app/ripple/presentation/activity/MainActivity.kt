@@ -16,10 +16,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavHost
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
 import com.app.ripple.di.Test
+import com.app.ripple.presentation.navigation.garph.MainNavGraphRoute
+import com.app.ripple.presentation.navigation.garph.mainGraph
 import com.app.ripple.presentation.screen.audio_test.AudioRecorderScreen
 import com.app.ripple.presentation.screen.message.NearbyShareScreen
 import com.app.ripple.presentation.screen.splash.SplashScreen
@@ -51,11 +58,19 @@ class MainActivity : ComponentActivity() {
                 }
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    SplashScreen(modifier =  Modifier.padding(innerPadding))
+                    App(modifier = Modifier.padding(innerPadding))
 //                    NearbyShareScreen(modifier = Modifier.padding(innerPadding))
 //                    AudioRecorderScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
+        }
+    }
+
+    @Composable
+    fun App(modifier: Modifier){
+        val navController = rememberNavController()
+        NavHost(navController = navController, startDestination = MainNavGraphRoute){
+            mainGraph(navController = navController)
         }
     }
 

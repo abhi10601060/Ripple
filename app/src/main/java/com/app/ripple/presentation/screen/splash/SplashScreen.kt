@@ -26,7 +26,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.app.ripple.R
+import com.app.ripple.presentation.navigation.garph.HomeScreenRoute
 import com.app.ripple.presentation.shared.RippleTextButton
 import com.app.ripple.presentation.shared.RippleTextField
 import com.app.ripple.presentation.ui.theme.CourierPrimeFamily
@@ -35,7 +37,10 @@ import com.app.ripple.presentation.ui.theme.MontserratFamily
 import com.app.ripple.presentation.ui.theme.TertiaryDarkBG
 
 @Composable
-fun SplashScreen(modifier: Modifier = Modifier) {
+fun SplashScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController? = null
+) {
 
     var userNameValue by remember {
         mutableStateOf("")
@@ -99,7 +104,9 @@ fun SplashScreen(modifier: Modifier = Modifier) {
 
                     RippleTextButton(
                         title = "Continue",
-                        onClick = { }
+                        onClick = {
+                            navController?.navigate(HomeScreenRoute)
+                        }
                     )
                 }
             }
