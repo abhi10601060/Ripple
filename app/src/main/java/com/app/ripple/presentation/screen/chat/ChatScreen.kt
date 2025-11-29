@@ -27,7 +27,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.app.ripple.data.nearby.model.NearbyDevice
+import com.app.ripple.presentation.screen.home.HomeScreenViewModel
 import com.app.ripple.presentation.shared.CircularImage
 import com.app.ripple.presentation.shared.Ripple
 import com.app.ripple.presentation.shared.RippleTextField
@@ -38,8 +41,15 @@ import com.app.ripple.presentation.ui.theme.MontserratFamily
 @Composable
 fun ChatScreen(
     modifier: Modifier = Modifier,
-    navController: NavController? = null
+    navController: NavController? = null,
+    receiverDevice: NearbyDevice,
+    viewModel: ChatScreenViewModel
 ) {
+
+    LaunchedEffect(key1 = true) {
+        viewModel.init(receiverDevice = receiverDevice)
+
+    }
 
     var typedMessage by remember {
         mutableStateOf("")
@@ -53,6 +63,7 @@ fun ChatScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             ChatScreenHeader(
+                receiverDevice = receiverDevice,
                 onBackClick = {
                     navController?.popBackStack()
                 }
@@ -101,7 +112,8 @@ fun ChatScreen(
 @Composable
 fun ChatScreenHeader(
     modifier: Modifier = Modifier,
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    receiverDevice: NearbyDevice
 ) {
     Row(
         modifier = modifier.fillMaxWidth()
@@ -125,7 +137,7 @@ fun ChatScreenHeader(
         CircularImage(size = 40.dp)
 
         Text(
-            text = "Abhishek Velekar",
+            text = receiverDevice.deviceName,
             color = Color.White,
             modifier = Modifier.padding(start = 10.dp),
             fontFamily = MontserratFamily,
@@ -138,5 +150,7 @@ fun ChatScreenHeader(
 @Preview
 @Composable
 private fun ChatScreenPrev() {
-    ChatScreen()
+//    ChatScreen(
+//        receiverDevice = NearbyDevice.mock
+//    )
 }

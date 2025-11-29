@@ -131,5 +131,5 @@ fun ProfileImageSection(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun InboxItemPreview() {
-    InboxItem(nearbyDevice = NearbyDevice.mock)
+//    InboxItem(nearbyDevice = NearbyDevice.mock)
 }

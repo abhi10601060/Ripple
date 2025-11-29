@@ -1,5 +1,8 @@
 package com.app.ripple.data.nearby.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class NearbyDevice(
     val deviceId: String,
     val deviceName: String,

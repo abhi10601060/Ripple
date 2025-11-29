@@ -36,7 +36,7 @@ fun InboxScreen(
                 InboxItem(
                     modifier = Modifier
                         .clickable{
-                            navController?.navigate(ChatScreenRoute)
+                            navController?.navigate(ChatScreenRoute(receiverDevice = connectedDevice))
                         },
                     nearbyDevice = connectedDevice
                 )
