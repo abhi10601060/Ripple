@@ -22,7 +22,7 @@ fun CircularImage(
     size: Dp = 40.dp
 ) {
     Box(
-        modifier = Modifier.size(size)
+        modifier = modifier.size(size)
             .clip(shape = CircleShape)
     ){
         Image(

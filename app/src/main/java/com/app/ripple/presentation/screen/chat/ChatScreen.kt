@@ -23,6 +23,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,6 +33,7 @@ import com.app.ripple.presentation.shared.Ripple
 import com.app.ripple.presentation.shared.RippleTextField
 import com.app.ripple.presentation.ui.theme.CourierPrimeFamily
 import com.app.ripple.presentation.ui.theme.DarkBG
+import com.app.ripple.presentation.ui.theme.MontserratFamily
 
 @Composable
 fun ChatScreen(
@@ -44,7 +46,7 @@ fun ChatScreen(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize()
             .background(color = DarkBG)
     ){
         Column(
@@ -57,7 +59,9 @@ fun ChatScreen(
             )
 
             LazyColumn {
-
+                items(count = 10) { i ->
+                    MessageItem(isFromCurrentUser = i % 2 == 0)
+                }
             }
         }
 
@@ -100,7 +104,7 @@ fun ChatScreenHeader(
     onBackClick: () -> Unit = {}
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
             .padding(5.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -124,7 +128,8 @@ fun ChatScreenHeader(
             text = "Abhishek Velekar",
             color = Color.White,
             modifier = Modifier.padding(start = 10.dp),
-            fontFamily = CourierPrimeFamily,
+            fontFamily = MontserratFamily,
+            fontWeight = FontWeight.SemiBold,
             fontSize = 18.sp
         )
     }
