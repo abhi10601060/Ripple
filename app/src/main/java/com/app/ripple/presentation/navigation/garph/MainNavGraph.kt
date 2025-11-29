@@ -1,5 +1,6 @@
 package com.app.ripple.presentation.navigation.garph
 
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -20,7 +21,7 @@ fun NavGraphBuilder.mainGraph(navController: NavController){
         }
 
         composable<HomeScreenRoute> {
-            HomeScreen(navController = navController)
+            HomeScreen(navController = navController, viewModel = hiltViewModel())
         }
 
         composable<ChatScreenRoute>{

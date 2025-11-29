@@ -14,14 +14,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.app.ripple.data.nearby.model.NearbyDevice
 import com.app.ripple.presentation.shared.CircularImage
 import com.app.ripple.presentation.ui.theme.CourierPrimeFamily
 import com.app.ripple.presentation.ui.theme.DarkBG
 
 @Composable
-fun ActiveUserItem(modifier: Modifier = Modifier) {
+fun ActiveUserItem(
+    modifier: Modifier = Modifier,
+    nearbyDevice: NearbyDevice
+) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(color = DarkBG)
     ) {
@@ -32,14 +36,14 @@ fun ActiveUserItem(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(vertical = 5.dp)
         ) {
             Text(
-                text = "Abhishek Velekar",
+                text = nearbyDevice.deviceName,
                 color = Color.White,
                 fontFamily = CourierPrimeFamily,
                 fontSize = 18.sp,
             )
 
             Text(
-                text = "~abhi_velekar",
+                text = "~${nearbyDevice.deviceId}",
                 color = Color.Gray,
                 fontFamily = CourierPrimeFamily,
                 fontSize = 15.sp
@@ -51,5 +55,5 @@ fun ActiveUserItem(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun ActiveUserItemPreview() {
-    ActiveUserItem()
+    ActiveUserItem(nearbyDevice = NearbyDevice.mock)
 }

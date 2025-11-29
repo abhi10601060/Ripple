@@ -2,6 +2,7 @@ package com.app.ripple.data.nearby
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.provider.Settings
 import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
 import com.app.ripple.data.nearby.model.ClusterInfo
@@ -72,7 +73,9 @@ class NearbyShareManager private constructor(private val context: Context) {
     // Nearby Connections API client
     private val connectionsClient: ConnectionsClient = Nearby.getConnectionsClient(context)
 
-    private val deviceName = android.os.Build.MODEL
+    @SuppressLint("HardwareIds")
+    private val androidId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+    private val deviceName = "${android.os.Build.MODEL}:${androidId}"
     private val serviceId = "com.app.ripple"
 
     // Connection lifecycle callbacks
@@ -80,7 +83,7 @@ class NearbyShareManager private constructor(private val context: Context) {
         override fun onConnectionInitiated(endpointId: String, info: ConnectionInfo) {
             Log.d("NearbyShare", "Connection initiated with: ${info.endpointName}")
             connectionsClient.acceptConnection(endpointId, payloadCallback)
-            connectionPool.put(endpointId, info.endpointName)
+//            connectionPool.put(endpointId, info.endpointName)
         }
 
         override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {

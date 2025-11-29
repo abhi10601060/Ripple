@@ -1,6 +1,5 @@
 package com.app.ripple.presentation.screen.home
 
-import android.icu.text.CaseMap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -39,15 +38,34 @@ import com.app.ripple.presentation.shared.RippleLogo
 import com.app.ripple.presentation.ui.theme.DarkBG
 import com.app.ripple.presentation.ui.theme.MontserratFamily
 import com.app.ripple.presentation.ui.theme.SecondaryDarkBG
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
+    viewModel: HomeScreenViewModel,
     navController: NavController? = null
 ) {
 
     var activeTab by remember {
         mutableStateOf(HomeTab.CHATS)
+    }
+
+    LaunchedEffect(key1 = true) {
+        CoroutineScope(Dispatchers.Default).launch{
+            viewModel.startAdvertisingAndDiscovery()
+            viewModel.getNearbyDiscoveredDevices()
+        }
+    }
+
+    DisposableEffect(key1 = true) {
+        onDispose {
+            CoroutineScope(Dispatchers.Default).launch {
+                viewModel.stopAdvertisingAndDiscovery()
+            }
+        }
     }
 
     Box(
@@ -69,7 +87,7 @@ fun HomeScreen(
                 )
             }
             else{
-                ActiveUsersScreen()
+                ActiveUsersScreen(viewModel = viewModel)
             }
         }
 
@@ -174,5 +192,5 @@ enum class HomeTab(val title : String) {
 @Preview
 @Composable
 private fun HomeScreenPreview() {
-    HomeScreen()
+//    HomeScreen()
 }
