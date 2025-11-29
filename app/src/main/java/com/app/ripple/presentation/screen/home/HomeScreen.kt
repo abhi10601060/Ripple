@@ -56,7 +56,14 @@ fun HomeScreen(
     LaunchedEffect(key1 = true) {
         CoroutineScope(Dispatchers.Default).launch{
             viewModel.startAdvertisingAndDiscovery()
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
             viewModel.getNearbyDiscoveredDevices()
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            viewModel.getNearbyConnectedDevices()
         }
     }
 
@@ -83,7 +90,8 @@ fun HomeScreen(
 
             if (activeTab == HomeTab.CHATS){
                 InboxScreen(
-                    navController = navController
+                    navController = navController,
+                    viewModel = viewModel
                 )
             }
             else{

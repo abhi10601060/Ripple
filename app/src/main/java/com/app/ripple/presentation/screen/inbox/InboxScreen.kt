@@ -23,19 +23,22 @@ import com.app.ripple.presentation.screen.home.HomeScreenViewModel
 @Composable
 fun InboxScreen(
     modifier: Modifier = Modifier,
+    viewModel: HomeScreenViewModel,
     navController: NavController? = null
 ) {
+    val connectedDevices by remember { viewModel.nearbyConnectedDevices }
 
     Box(
         modifier = Modifier.fillMaxSize()
     ){
         LazyColumn {
-            items(count = 20) { id ->
+            items(items = connectedDevices) { connectedDevice ->
                 InboxItem(
                     modifier = Modifier
                         .clickable{
                             navController?.navigate(ChatScreenRoute)
-                        }
+                        },
+                    nearbyDevice = connectedDevice
                 )
                 Spacer(modifier = Modifier
                     .padding(8.dp)
@@ -50,5 +53,5 @@ fun InboxScreen(
 @Preview
 @Composable
 private fun InboxScreenPreview() {
-    InboxScreen()
+//    InboxScreen()
 }

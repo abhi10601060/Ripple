@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.app.ripple.data.nearby.model.NearbyDevice
 import com.app.ripple.presentation.shared.CircularImage
 import com.app.ripple.presentation.ui.theme.CourierPrimeFamily
 import com.app.ripple.presentation.ui.theme.DarkBG
@@ -30,7 +31,8 @@ import com.app.ripple.presentation.ui.theme.TertiaryDarkBG
 
 @Composable
 fun InboxItem(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    nearbyDevice: NearbyDevice
 ) {
     Row(
         modifier = modifier
@@ -47,7 +49,7 @@ fun InboxItem(
         ) {
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "Abhishek Velekar",
+                text = nearbyDevice.deviceName,
                 color = Color.White,
                 fontSize = 18.sp,
                 lineHeight = 20.sp,
@@ -129,5 +131,5 @@ fun ProfileImageSection(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun InboxItemPreview() {
-    InboxItem()
+    InboxItem(nearbyDevice = NearbyDevice.mock)
 }
