@@ -1,5 +1,6 @@
 package com.app.ripple.presentation.screen.active_users
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +19,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.ripple.presentation.screen.home.HomeScreenViewModel
 import com.app.ripple.presentation.ui.theme.DarkBG
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun ActiveUsersScreen(
@@ -32,7 +36,19 @@ fun ActiveUsersScreen(
     ){
         LazyColumn {
             items(items =  discoveredDevices) { device ->
-                ActiveUserItem(nearbyDevice = device)
+                ActiveUserItem(
+                    nearbyDevice = device,
+                    onConnectClick = {
+                        CoroutineScope(Dispatchers.Default).launch{
+                            viewModel.connectDevice(device)
+                        }
+                    },
+                    onDisconnectClick = {
+                        CoroutineScope(Dispatchers.Default).launch{
+                            viewModel.disconnectDevice(device)
+                        }
+                    }
+                )
 
                 Spacer(modifier = Modifier
                     .padding(8.dp)

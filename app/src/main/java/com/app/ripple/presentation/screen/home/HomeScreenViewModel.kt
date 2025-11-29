@@ -5,6 +5,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.app.ripple.data.nearby.model.NearbyDevice
+import com.app.ripple.domain.use_case.nearby.ConnectDeviceUseCase
+import com.app.ripple.domain.use_case.nearby.DisconnectDeviceUseCase
 import com.app.ripple.domain.use_case.nearby.GetNearbyDiscoveredDevicesUseCase
 import com.app.ripple.domain.use_case.nearby.StartAdvertisingUseCase
 import com.app.ripple.domain.use_case.nearby.StartDiscoveryUseCase
@@ -20,7 +22,8 @@ class HomeScreenViewModel @Inject constructor(
     private val startDiscoveryUseCase: StartDiscoveryUseCase,
     private val stopDiscoveryUseCase: StopDiscoveryUseCase,
     private val stopAdvertisingUseCase: StopAdvertisingUseCase,
-
+    private val connectDeviceUseCase: ConnectDeviceUseCase,
+    private val disconnectDeviceUseCase: DisconnectDeviceUseCase
 ) : ViewModel() {
 
     private val TAG = "HomeScreenViewModel"
@@ -54,4 +57,15 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
+    suspend fun connectDevice(device: NearbyDevice){
+        connectDeviceUseCase.invoke(device.deviceId).collect { isConnected ->
+            Log.d(TAG, "connected to Device: ${device.deviceName} : $isConnected")
+        }
+    }
+
+    suspend fun disconnectDevice(device: NearbyDevice){
+        disconnectDeviceUseCase.invoke(device.deviceId).collect { isDisconnected ->
+            Log.d(TAG, "disconnected from device: ${device.deviceName} : $isDisconnected")
+        }
+    }
 }
