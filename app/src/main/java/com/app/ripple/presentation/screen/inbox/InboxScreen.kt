@@ -1,6 +1,7 @@
 package com.app.ripple.presentation.screen.inbox
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,15 +15,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.app.ripple.presentation.navigation.garph.ChatScreenRoute
 
 @Composable
-fun InboxScreen(modifier: Modifier = Modifier) {
+fun InboxScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController? = null
+) {
     Box(
         modifier = Modifier.fillMaxSize()
     ){
         LazyColumn {
             items(count = 20) {
-                InboxItem()
+                InboxItem(
+                    modifier = Modifier
+                        .clickable{
+                            navController?.navigate(ChatScreenRoute)
+                        }
+                )
                 Spacer(modifier = Modifier
                     .padding(8.dp)
                     .fillMaxWidth()

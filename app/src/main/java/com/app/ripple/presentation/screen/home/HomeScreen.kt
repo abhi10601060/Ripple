@@ -64,7 +64,9 @@ fun HomeScreen(
             )
 
             if (activeTab == HomeTab.CHATS){
-                InboxScreen()
+                InboxScreen(
+                    navController = navController
+                )
             }
             else{
                 ActiveUsersScreen()

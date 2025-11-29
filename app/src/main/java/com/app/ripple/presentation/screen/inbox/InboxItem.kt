@@ -33,7 +33,7 @@ fun InboxItem(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(DarkBG)
             .padding(start = 5.dp)
@@ -65,7 +65,6 @@ fun InboxItem(
                 color = TertiaryDarkBG,
                 fontSize = 15.sp,
                 fontFamily = CourierPrimeFamily,
-                fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
                 lineHeight = 16.sp,
                 overflow = TextOverflow.Ellipsis
