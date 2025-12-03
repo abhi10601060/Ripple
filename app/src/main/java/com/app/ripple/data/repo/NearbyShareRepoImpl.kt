@@ -44,6 +44,8 @@ class NearbyShareRepoImpl(
     override fun getSentMessages(): Flow<List<TextMessage>> =
         nearbyShareManager.sentMessages
 
+    // For 2.0
+
     override fun getClusterInfo(): Flow<ClusterInfo> =
         nearbyShareManager.clusterInfo.map { it ?: ClusterInfo("", emptyList(), false) }
 

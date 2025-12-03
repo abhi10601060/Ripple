@@ -3,11 +3,8 @@ package com.app.ripple.presentation.screen.chat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -19,14 +16,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.app.ripple.data.nearby.model.TextMessage
 import com.app.ripple.presentation.shared.CircularImage
 import com.app.ripple.presentation.ui.theme.CourierPrimeFamily
 import com.app.ripple.presentation.ui.theme.DarkBG
 import com.app.ripple.presentation.ui.theme.SecondaryDarkBG
 
 @Composable
-fun MessageItem(
+fun TextMessageItem(
     modifier: Modifier = Modifier,
+    textMessage: TextMessage,
     isFromCurrentUser: Boolean = false,
 ) {
     Row(
@@ -48,7 +47,7 @@ fun MessageItem(
                 modifier = Modifier.fillMaxWidth(0.8f)
             ){
                 Text(
-                    text = "This is a Message.....And this is a long message ",
+                    text = textMessage.content,
                     modifier = Modifier
                         .align(if(isFromCurrentUser) Alignment.CenterEnd else Alignment.CenterStart)
                         .padding(start = 5.dp, end = 5.dp)
@@ -67,6 +66,6 @@ fun MessageItem(
 
 @Preview
 @Composable
-private fun MessageItemPreview() {
-    MessageItem()
+private fun TextMessageItemPreview() {
+//    TextMessageItem()
 }
