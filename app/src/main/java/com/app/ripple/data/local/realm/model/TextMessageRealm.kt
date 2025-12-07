@@ -4,8 +4,7 @@ import com.app.ripple.data.nearby.model.DeliveryStatus
 import com.app.ripple.data.nearby.model.TextMessage
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
-import org.mongodb.kbson.BsonTimestamp
-import org.mongodb.kbson.ObjectId
+
 
 class TextMessageRealm(
     @PrimaryKey

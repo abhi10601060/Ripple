@@ -163,6 +163,7 @@ class NearbyShareManager private constructor(
     }
 
     // Payload callbacks for handling messages
+    @OptIn(DelicateCoroutinesApi::class)
     private val payloadCallback = object : PayloadCallback() {
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
             if (payload.type == Payload.Type.BYTES) {
@@ -187,10 +188,20 @@ class NearbyShareManager private constructor(
             when (update.status) {
                 PayloadTransferUpdate.Status.SUCCESS -> {
                     Log.d("NearbyShare", "Payload transfer successful")
+
+                    GlobalScope.launch(Dispatchers.IO) {
+                        TextMessagePersitenceRepo.updateDeliveryStatus(update.payloadId, DeliveryStatus.DELIVERED)
+                    }
+
                     updateMessageDeliveryStatus(endpointId, DeliveryStatus.DELIVERED)
                 }
                 PayloadTransferUpdate.Status.FAILURE -> {
                     Log.d("NearbyShare", "Payload transfer failed")
+
+                    GlobalScope.launch(Dispatchers.IO) {
+                        TextMessagePersitenceRepo.updateDeliveryStatus(update.payloadId, DeliveryStatus.DELIVERED)
+                    }
+
                     updateMessageDeliveryStatus(endpointId, DeliveryStatus.FAILED)
                 }
                 PayloadTransferUpdate.Status.IN_PROGRESS -> {
