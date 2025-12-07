@@ -82,6 +82,7 @@ class NearbyShareManager private constructor(private val context: Context, priva
     private val serviceId = "com.app.ripple"
 
     // Connection lifecycle callbacks
+    @OptIn(DelicateCoroutinesApi::class)
     private val connectionLifecycleCallback = object : ConnectionLifecycleCallback() {
         override fun onConnectionInitiated(endpointId: String, info: ConnectionInfo) {
             Log.d("NearbyShare", "Connection initiated with: ${info.endpointName}")
@@ -93,6 +94,11 @@ class NearbyShareManager private constructor(private val context: Context, priva
             when (result.status.statusCode) {
                 ConnectionsStatusCodes.STATUS_OK -> {
                     Log.d("NearbyShare", "Connected to: $endpointId")
+
+                    GlobalScope.launch(Dispatchers.IO) {
+                        nearbyDevicePersistenceRepo.updateConnectionState(endpointId, ConnectionState.CONNECTED)
+                    }
+
                     updateDeviceConnectionState(endpointId, ConnectionState.CONNECTED)
                 }
                 ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
@@ -108,6 +114,11 @@ class NearbyShareManager private constructor(private val context: Context, priva
 
         override fun onDisconnected(endpointId: String) {
             Log.d("NearbyShare", "Disconnected from: $endpointId")
+
+            GlobalScope.launch(Dispatchers.IO) {
+                nearbyDevicePersistenceRepo.updateConnectionState(endpointId, ConnectionState.DISCONNECTED)
+            }
+
             updateDeviceConnectionState(endpointId, ConnectionState.DISCONNECTED)
             connectionPool.remove(endpointId)
         }

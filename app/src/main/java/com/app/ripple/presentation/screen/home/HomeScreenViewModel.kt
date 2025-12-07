@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.*
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.app.ripple.data.local.realm.model.NearbyDeviceRealm
 import com.app.ripple.data.nearby.model.NearbyDevice
 import com.app.ripple.domain.use_case.nearby.ConnectDeviceUseCase
 import com.app.ripple.domain.use_case.nearby.DisconnectDeviceUseCase
@@ -33,8 +34,8 @@ class HomeScreenViewModel @Inject constructor(
     private val _nearbyDiscoveredDevices = mutableStateOf(listOf<NearbyDevice>())
     val nearbyDiscoveredDevices: State<List<NearbyDevice>> = _nearbyDiscoveredDevices
 
-    private val _nearbyConnectedDevices = mutableStateOf(listOf<NearbyDevice>())
-    val nearbyConnectedDevices: State<List<NearbyDevice>> = _nearbyConnectedDevices
+    private val _nearbyConnectedDevices = mutableStateOf(listOf<NearbyDeviceRealm>())
+    val nearbyConnectedDevices: State<List<NearbyDeviceRealm>> = _nearbyConnectedDevices
 
     suspend fun getNearbyDiscoveredDevices(){
         nearbyDiscoveredDevicesUseCase.invoke().collect { devices ->

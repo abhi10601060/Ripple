@@ -7,7 +7,9 @@ import com.app.ripple.data.local.realm.NearbyDeviceRealmRepo
 import com.app.ripple.data.local.realm.model.NearbyDeviceRealm
 import com.app.ripple.data.local.realm.model.TextMessageRealm
 import com.app.ripple.data.nearby.NearbyShareManager
+import com.app.ripple.data.repo.NearbyDeviceRepoImpl
 import com.app.ripple.data.repo.NearbyShareRepoImpl
+import com.app.ripple.domain.repo.NearbyDeviceRepo
 import com.app.ripple.domain.repo.NearbyShareRepo
 import dagger.Module
 import dagger.Provides
@@ -56,6 +58,12 @@ object AppModule {
     @Singleton
     fun getRepo(nearbyShareManager: NearbyShareManager) : NearbyShareRepo{
         return NearbyShareRepoImpl(nearbyShareManager)
+    }
+
+    @Provides
+    @Singleton
+    fun providesNearbyDeviceRepo(nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo): NearbyDeviceRepo{
+        return NearbyDeviceRepoImpl(nearbyDevicePersistenceRepo = nearbyDevicePersistenceRepo)
     }
 
     @Provides

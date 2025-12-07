@@ -2,6 +2,7 @@ package com.app.ripple.data.local.realm.model
 
 import com.app.ripple.data.nearby.model.ConnectionState
 import com.app.ripple.data.nearby.model.DeviceVisibility
+import com.app.ripple.data.nearby.model.NearbyDevice
 import com.app.ripple.data.nearby.model.TextMessage
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
@@ -29,4 +30,14 @@ class NearbyDeviceRealm(
             get() = DeviceVisibility.valueOf(_visibility)
 
     constructor() : this(id = "", endpointId = "", deviceName = "")
+}
+
+fun NearbyDeviceRealm.toNearbyDevice(): NearbyDevice{
+    return NearbyDevice(
+        id = this.id,
+        endpointId = this.endpointId,
+        deviceName = this.deviceName,
+        connectionState = this.connectionState,
+        lastSeen = this.lastSeen,
+    )
 }
