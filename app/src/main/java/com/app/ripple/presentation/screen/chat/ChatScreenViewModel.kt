@@ -10,9 +10,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.ripple.data.nearby.model.NearbyDevice
 import com.app.ripple.data.nearby.model.TextMessage
+import com.app.ripple.domain.model.NearbyDeviceDomain
 import com.app.ripple.domain.use_case.chat.GetReceivedMessageUseCase
 import com.app.ripple.domain.use_case.chat.GetSentMessageUseCase
 import com.app.ripple.domain.use_case.chat.SendTextMessageUseCase
+import com.app.ripple.domain.use_case.nearby.GetNearbyDeviceByIdUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,13 +24,17 @@ import javax.inject.Inject
 class ChatScreenViewModel @Inject constructor(
     private val sendTextMessageUseCase: SendTextMessageUseCase,
     private val getSentMessageUseCase: GetSentMessageUseCase,
-    private val getReceivedMessageUseCase: GetReceivedMessageUseCase
+    private val getReceivedMessageUseCase: GetReceivedMessageUseCase,
+    private val getNearbyDeviceByIdUseCase: GetNearbyDeviceByIdUseCase
 ) : ViewModel() {
 
     private val TAG = "ChatScreenViewModel"
 
     private lateinit var receiverDevice: NearbyDevice
     private lateinit var androidId: String
+
+    private val _receiverDeviceDomain = mutableStateOf<NearbyDeviceDomain?>(null)
+    val receiverDeviceDomain: State<NearbyDeviceDomain?> = _receiverDeviceDomain
 
     private val _sentMessages = mutableStateOf(listOf<TextMessage>())
     val sentMessages: State<List<TextMessage>> = _sentMessages
@@ -46,8 +52,9 @@ class ChatScreenViewModel @Inject constructor(
         if (payload.isEmpty()) return
 
         val textMessage = TextMessage(
-            senderId = "${android.os.Build.MODEL}:${androidId}",
-            receiverId = receiverDevice.endpointId,
+            endpointId = receiverDevice.endpointId,
+            senderId = androidId,
+            receiverId = receiverDeviceDomain.value?.id.toString(),
             content = payload
         )
         viewModelScope.launch(Dispatchers.IO) {
@@ -69,6 +76,14 @@ class ChatScreenViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             getReceivedMessageUseCase.invoke().collect { textMessages ->
                 _receivedMessages.value = textMessages
+            }
+        }
+    }
+
+    fun observeReceiverDevice(){
+        viewModelScope.launch(Dispatchers.IO) {
+            getNearbyDeviceByIdUseCase.invoke(id = receiverDevice.id).collect {
+                _receiverDeviceDomain.value = it
             }
         }
     }

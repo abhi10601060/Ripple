@@ -33,12 +33,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.app.ripple.data.local.realm.model.toTextMessage
 import com.app.ripple.data.nearby.model.NearbyDevice
 import com.app.ripple.presentation.shared.CircularImage
 import com.app.ripple.presentation.shared.Ripple
 import com.app.ripple.presentation.shared.RippleTextField
 import com.app.ripple.presentation.ui.theme.DarkBG
 import com.app.ripple.presentation.ui.theme.MontserratFamily
+import kotlinx.coroutines.launch
 
 @Composable
 fun ChatScreen(
@@ -48,6 +50,10 @@ fun ChatScreen(
     viewModel: ChatScreenViewModel
 ) {
     val context = LocalContext.current
+
+    val receiverDeviceDomain by remember {
+        viewModel.receiverDeviceDomain
+    }
 
     val receivedMessages by remember {
         viewModel.receivedMessages
@@ -61,16 +67,17 @@ fun ChatScreen(
 
     val allMessages by  remember {
         derivedStateOf {
-            val unsortedAllMessages = receivedMessages + sentMessages
-            unsortedAllMessages
-                .filter { it.receiverId == receiverDevice.endpointId || it.senderId == receiverDevice.endpointId }
-                .sortedBy { it.timestamp }
+            receiverDeviceDomain?.allMessages ?: listOf()
         }
     }
 
     LaunchedEffect(key1 = allMessages.size) {
         if (allMessages.isNotEmpty()){
             chatScrollState.animateScrollToItem(allMessages.size - 1)
+        }
+
+        launch {
+            viewModel.observeReceiverDevice()
         }
     }
 
@@ -105,7 +112,7 @@ fun ChatScreen(
                 state = chatScrollState
             ) {
                 items(items = allMessages){ message ->
-                    TextMessageItem(textMessage = message, isFromCurrentUser = message.senderId != receiverDevice.endpointId)
+                    TextMessageItem(textMessage = message, isFromCurrentUser = message.senderId != receiverDeviceDomain?.id)
                 }
             }
 

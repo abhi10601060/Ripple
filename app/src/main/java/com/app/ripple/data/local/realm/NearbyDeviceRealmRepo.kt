@@ -48,6 +48,8 @@ class NearbyDeviceRealmRepo(private val realm: Realm): NearbyDevicePersistenceRe
         return allDevices
     }
 
+
+
     override suspend fun updateConnectionState(endpointId: String, connectionState: ConnectionState) {
         realm.write {
             val discoveredDevice = query(NearbyDeviceRealm::class, "endpointId == $0", endpointId).first().find()
@@ -55,6 +57,16 @@ class NearbyDeviceRealmRepo(private val realm: Realm): NearbyDevicePersistenceRe
                 this._connectionState = connectionState.name
             }
         }
+    }
+
+    override suspend fun getNearbyDeviceById(deviceId: String): Flow<NearbyDeviceRealm?> {
+        val device = realm.query(NearbyDeviceRealm::class, "id == $0", deviceId)
+            .asFlow()
+            .map { result ->
+                result.list.firstOrNull()
+            }
+
+        return device
     }
 
 }

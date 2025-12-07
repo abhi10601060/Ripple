@@ -7,6 +7,8 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
 import com.app.ripple.data.local.contract.NearbyDevicePersistenceRepo
 import com.app.ripple.data.local.contract.TextMessagePersistenceRepo
+import com.app.ripple.data.nearby.dto.TextMessageDto
+import com.app.ripple.data.nearby.dto.toTextMessageDto
 import com.app.ripple.data.nearby.model.ClusterInfo
 import com.app.ripple.data.nearby.model.ConnectionState
 import com.app.ripple.data.nearby.model.DeliveryStatus
@@ -28,6 +30,7 @@ import com.google.android.gms.nearby.connection.PayloadCallback
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate
 import com.google.android.gms.nearby.connection.Strategy
 import com.google.android.gms.tasks.Task
+import com.google.gson.Gson
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -167,11 +170,13 @@ class NearbyShareManager private constructor(
     private val payloadCallback = object : PayloadCallback() {
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
             if (payload.type == Payload.Type.BYTES) {
-                val messageContent = String(payload.asBytes()!!, Charsets.UTF_8)
+                val serialisedMessage = String(payload.asBytes()!!, Charsets.UTF_8)
+                Log.d(TAG, "onPayloadReceived: $serialisedMessage")
+                val receivedMessage = Gson().fromJson(serialisedMessage, TextMessageDto::class.java)
                 val message = TextMessage(
-                    content = messageContent,
-                    senderId = endpointId,
-                    receiverId = deviceName,
+                    content = receivedMessage.content,
+                    senderId = receivedMessage.senderId,
+                    receiverId = receivedMessage.receiverId,
                     deliveryStatus = DeliveryStatus.DELIVERED
                 )
 
@@ -295,10 +300,12 @@ class NearbyShareManager private constructor(
     }
 
     fun sendTextMessage(message: TextMessage): Flow<Boolean> = flow {
-        val payload = Payload.fromBytes(message.content.toByteArray(Charsets.UTF_8))
+        val serialisedMessage = Gson().toJson(message.toTextMessageDto())
+        Log.d(TAG, "sendTextMessage: $serialisedMessage")
+        val payload = Payload.fromBytes(serialisedMessage.toByteArray(Charsets.UTF_8))
         message.id = payload.id
         try {
-            val result = connectionsClient.sendPayload(message.receiverId, payload).await()
+            val result = connectionsClient.sendPayload(message.endpointId, payload).await()
 
             GlobalScope.launch(Dispatchers.IO) {
                 TextMessagePersitenceRepo.insertSentMessage(message.toTextMessageRealm())

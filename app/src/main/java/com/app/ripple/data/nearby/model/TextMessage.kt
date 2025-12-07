@@ -7,6 +7,7 @@ data class TextMessage(
     val content: String,
     val senderId: String,
     val receiverId: String,
+    val endpointId: String = "null",
     val timestamp: Long = System.currentTimeMillis(),
     val deliveryStatus: DeliveryStatus = DeliveryStatus.PENDING
 )
