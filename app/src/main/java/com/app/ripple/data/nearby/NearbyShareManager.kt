@@ -6,11 +6,13 @@ import android.provider.Settings
 import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
 import com.app.ripple.data.local.contract.NearbyDevicePersistenceRepo
+import com.app.ripple.data.local.contract.TextMessagePersistenceRepo
 import com.app.ripple.data.nearby.model.ClusterInfo
 import com.app.ripple.data.nearby.model.ConnectionState
 import com.app.ripple.data.nearby.model.DeliveryStatus
 import com.app.ripple.data.nearby.model.NearbyDevice
 import com.app.ripple.data.nearby.model.TextMessage
+import com.app.ripple.data.nearby.model.toTextMessageRealm
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.AdvertisingOptions
 import com.google.android.gms.nearby.connection.ConnectionInfo
@@ -39,7 +41,11 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resumeWithException
 
-class NearbyShareManager private constructor(private val context: Context, private val nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo) {
+class NearbyShareManager private constructor(
+    private val context: Context,
+    private val nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo,
+    private val TextMessagePersitenceRepo: TextMessagePersistenceRepo)
+{
 
     private val TAG = "NearbyShareManager"
     private val connectionPool = mutableStateMapOf<String, String>()
@@ -49,9 +55,13 @@ class NearbyShareManager private constructor(private val context: Context, priva
         @Volatile
         private var INSTANCE: NearbyShareManager? = null
 
-        fun getInstance(context: Context, nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo): NearbyShareManager {
+        fun getInstance(context: Context, nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo, textMessagePersistenceRepo: TextMessagePersistenceRepo): NearbyShareManager {
             return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: NearbyShareManager(context.applicationContext, nearbyDevicePersistenceRepo).also { INSTANCE = it }
+                INSTANCE ?: NearbyShareManager(
+                    context.applicationContext,
+                    nearbyDevicePersistenceRepo,
+                    textMessagePersistenceRepo
+                ).also { INSTANCE = it }
             }
         }
     }
@@ -145,6 +155,9 @@ class NearbyShareManager private constructor(private val context: Context, priva
 
         override fun onEndpointLost(endpointId: String) {
             Log.d("NearbyShare", "Endpoint lost: $endpointId")
+            GlobalScope.launch(Dispatchers.IO) {
+                nearbyDevicePersistenceRepo.updateConnectionState(endpointId, ConnectionState.DISCONNECTED)
+            }
             removeDiscoveredDevice(endpointId)
         }
     }
@@ -160,6 +173,11 @@ class NearbyShareManager private constructor(private val context: Context, priva
                     receiverId = deviceName,
                     deliveryStatus = DeliveryStatus.DELIVERED
                 )
+
+                GlobalScope.launch(Dispatchers.IO) {
+                    TextMessagePersitenceRepo.insertReceivedMessage(message.toTextMessageRealm())
+                }
+
                 addReceivedMessage(message)
                 Log.d("NearbyShare", "Message received: ${message}")
             }
@@ -267,8 +285,14 @@ class NearbyShareManager private constructor(private val context: Context, priva
 
     fun sendTextMessage(message: TextMessage): Flow<Boolean> = flow {
         val payload = Payload.fromBytes(message.content.toByteArray(Charsets.UTF_8))
+        message.id = payload.id
         try {
             val result = connectionsClient.sendPayload(message.receiverId, payload).await()
+
+            GlobalScope.launch(Dispatchers.IO) {
+                TextMessagePersitenceRepo.insertSentMessage(message.toTextMessageRealm())
+            }
+
             addSentMessage(message.copy(deliveryStatus = DeliveryStatus.SENT))
             Log.d(TAG, "sendTextMessage: Success")
             emit(true)

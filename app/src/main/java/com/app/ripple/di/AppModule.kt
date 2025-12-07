@@ -3,7 +3,9 @@ package com.app.ripple.di
 import android.content.Context
 import com.app.ripple.data.audio_recording.AudioRecordingManager
 import com.app.ripple.data.local.contract.NearbyDevicePersistenceRepo
+import com.app.ripple.data.local.contract.TextMessagePersistenceRepo
 import com.app.ripple.data.local.realm.NearbyDeviceRealmRepo
+import com.app.ripple.data.local.realm.TextMessageRealmRepo
 import com.app.ripple.data.local.realm.model.NearbyDeviceRealm
 import com.app.ripple.data.local.realm.model.TextMessageRealm
 import com.app.ripple.data.nearby.NearbyShareManager
@@ -50,8 +52,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providesNearbyShareManager(@ApplicationContext context: Context, nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo) : NearbyShareManager{
-        return NearbyShareManager.getInstance(context, nearbyDevicePersistenceRepo)
+    fun providesTextMessageRealmRepo(realm: Realm) : TextMessagePersistenceRepo{
+        return TextMessageRealmRepo(realm)
+    }
+
+    @Provides
+    @Singleton
+    fun providesNearbyShareManager(@ApplicationContext context: Context, nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo, textMessagePersistenceRepo: TextMessagePersistenceRepo) : NearbyShareManager{
+        return NearbyShareManager.getInstance(context, nearbyDevicePersistenceRepo, textMessagePersistenceRepo)
     }
 
     @Provides
