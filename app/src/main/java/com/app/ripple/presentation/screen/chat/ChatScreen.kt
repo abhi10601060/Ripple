@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -64,7 +63,7 @@ fun ChatScreen(
         derivedStateOf {
             val unsortedAllMessages = receivedMessages + sentMessages
             unsortedAllMessages
-                .filter { it.receiverId == receiverDevice.deviceId || it.senderId == receiverDevice.deviceId }
+                .filter { it.receiverId == receiverDevice.endpointId || it.senderId == receiverDevice.endpointId }
                 .sortedBy { it.timestamp }
         }
     }
@@ -106,7 +105,7 @@ fun ChatScreen(
                 state = chatScrollState
             ) {
                 items(items = allMessages){ message ->
-                    TextMessageItem(textMessage = message, isFromCurrentUser = message.senderId != receiverDevice.deviceId)
+                    TextMessageItem(textMessage = message, isFromCurrentUser = message.senderId != receiverDevice.endpointId)
                 }
             }
 

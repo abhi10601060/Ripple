@@ -407,7 +407,7 @@ fun DiscoveredDevicesSection(
                     device = device,
                     actionText = "Connect",
                     actionIcon = Icons.Default.Link,
-                    onAction = { onConnectDevice(device.deviceId) },
+                    onAction = { onConnectDevice(device.endpointId) },
                     actionEnabled = device.connectionState != ConnectionState.CONNECTING
                 )
             }
@@ -433,8 +433,8 @@ fun ConnectedDevicesSection(
             items(devices) { device ->
                 ConnectedDeviceCard(
                     device = device,
-                    onDisconnect = { onDisconnectDevice(device.deviceId) },
-                    onSendMessage = { onSendMessage(device.deviceId) }
+                    onDisconnect = { onDisconnectDevice(device.endpointId) },
+                    onSendMessage = { onSendMessage(device.endpointId) }
                 )
             }
         }

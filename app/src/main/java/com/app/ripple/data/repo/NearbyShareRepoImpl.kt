@@ -8,13 +8,11 @@ import com.app.ripple.data.nearby.model.TextMessage
 import com.app.ripple.domain.repo.NearbyShareRepo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
 class NearbyShareRepoImpl(
-    private val context: Context
+    private val nearbyShareManager: NearbyShareManager
 ) : NearbyShareRepo {
-
-    private val nearbyShareManager = NearbyShareManager.getInstance(context)
-
     override fun startAdvertising(): Flow<Boolean> = nearbyShareManager.startAdvertising()
 
     override fun stopAdvertising(): Flow<Boolean> = nearbyShareManager.stopAdvertising()

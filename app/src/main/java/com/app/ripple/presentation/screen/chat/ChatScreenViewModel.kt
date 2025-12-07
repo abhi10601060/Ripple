@@ -47,7 +47,7 @@ class ChatScreenViewModel @Inject constructor(
 
         val textMessage = TextMessage(
             senderId = "${android.os.Build.MODEL}:${androidId}",
-            receiverId = receiverDevice.deviceId,
+            receiverId = receiverDevice.endpointId,
             content = payload
         )
         viewModelScope.launch(Dispatchers.IO) {

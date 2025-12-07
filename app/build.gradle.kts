@@ -3,8 +3,10 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     kotlin("plugin.serialization") version "2.0.21"
-    id("kotlin-kapt")
+//    id("kotlin-kapt")
+    id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    id("io.realm.kotlin") version "2.0.0"
 }
 
 android {
@@ -83,10 +85,13 @@ dependencies {
 
     //Dagger Hilt
     implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
+    ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
     // Google Font
     implementation ("androidx.compose.ui:ui-text-google-fonts:1.9.5")
+
+    // Realm
+    implementation("io.realm.kotlin:library-base:2.0.0")
 
 }

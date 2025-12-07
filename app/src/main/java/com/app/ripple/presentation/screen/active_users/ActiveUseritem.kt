@@ -1,6 +1,5 @@
 package com.app.ripple.presentation.screen.active_users
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -66,7 +65,7 @@ fun ActiveUserItem(
             )
 
             Text(
-                text = "~${nearbyDevice.deviceId}",
+                text = "~${nearbyDevice.endpointId}",
                 color = Color.Gray,
                 fontFamily = CourierPrimeFamily,
                 fontSize = 15.sp

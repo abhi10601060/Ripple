@@ -5,6 +5,7 @@ import android.content.Context
 import android.provider.Settings
 import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
+import com.app.ripple.data.local.contract.NearbyDevicePersistenceRepo
 import com.app.ripple.data.nearby.model.ClusterInfo
 import com.app.ripple.data.nearby.model.ConnectionState
 import com.app.ripple.data.nearby.model.DeliveryStatus
@@ -25,8 +26,9 @@ import com.google.android.gms.nearby.connection.PayloadCallback
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate
 import com.google.android.gms.nearby.connection.Strategy
 import com.google.android.gms.tasks.Task
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,9 +36,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import javax.inject.Inject
 import kotlin.coroutines.resumeWithException
 
-class NearbyShareManager private constructor(private val context: Context) {
+class NearbyShareManager private constructor(private val context: Context, private val nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo) {
 
     private val TAG = "NearbyShareManager"
     private val connectionPool = mutableStateMapOf<String, String>()
@@ -46,9 +49,9 @@ class NearbyShareManager private constructor(private val context: Context) {
         @Volatile
         private var INSTANCE: NearbyShareManager? = null
 
-        fun getInstance(context: Context): NearbyShareManager {
+        fun getInstance(context: Context, nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo): NearbyShareManager {
             return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: NearbyShareManager(context.applicationContext).also { INSTANCE = it }
+                INSTANCE ?: NearbyShareManager(context.applicationContext, nearbyDevicePersistenceRepo).also { INSTANCE = it }
             }
         }
     }
@@ -111,14 +114,21 @@ class NearbyShareManager private constructor(private val context: Context) {
     }
 
     // Endpoint discovery callbacks
+    @OptIn(DelicateCoroutinesApi::class)
     private val endpointDiscoveryCallback = object : EndpointDiscoveryCallback() {
         override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
             Log.d("NearbyShare", "Endpoint found: ${info.endpointName}")
             val device = NearbyDevice(
-                deviceId = endpointId,
-                deviceName = info.endpointName,
+                id = info.endpointName.split(":")[1],
+                endpointId = endpointId,
+                deviceName = info.endpointName.split(":")[0],
                 connectionState = ConnectionState.DISCOVERED
             )
+
+            GlobalScope.launch(Dispatchers.IO) {
+                nearbyDevicePersistenceRepo.upsertDiscoveredNearbyDevice(nearbyDevice = device)
+            }
+
             addDiscoveredDevice(device)
         }
 
@@ -262,7 +272,7 @@ class NearbyShareManager private constructor(private val context: Context) {
         val clusterId = java.util.UUID.randomUUID().toString()
         val cluster = ClusterInfo(
             clusterId = clusterId,
-            devices = listOf(NearbyDevice(deviceName, deviceName, ConnectionState.CONNECTED)),
+            devices = listOf(NearbyDevice("123",deviceName, deviceName, ConnectionState.CONNECTED)),
             isActive = true
         )
         _clusterInfo.value = cluster
@@ -284,7 +294,7 @@ class NearbyShareManager private constructor(private val context: Context) {
         _clusterInfo.value = _clusterInfo.value?.copy(isActive = false)
         // Disconnect from all devices in cluster
         _connectedDevices.value.forEach { device ->
-            connectionsClient.disconnectFromEndpoint(device.deviceId)
+            connectionsClient.disconnectFromEndpoint(device.endpointId)
         }
         _connectedDevices.value = emptyList()
         emit(true)
@@ -293,7 +303,7 @@ class NearbyShareManager private constructor(private val context: Context) {
     // Private helper methods
     private fun addDiscoveredDevice(device: NearbyDevice) {
         val currentDevices = _discoveredDevices.value.toMutableList()
-        val existingIndex = currentDevices.indexOfFirst { it.deviceId == device.deviceId }
+        val existingIndex = currentDevices.indexOfFirst { it.endpointId == device.endpointId }
         if (existingIndex >= 0) {
             currentDevices[existingIndex] = device
         } else {
@@ -303,33 +313,33 @@ class NearbyShareManager private constructor(private val context: Context) {
     }
 
     private fun removeDiscoveredDevice(deviceId: String) {
-        _discoveredDevices.value = _discoveredDevices.value.filter { it.deviceId != deviceId }
+        _discoveredDevices.value = _discoveredDevices.value.filter { it.endpointId != deviceId }
     }
 
     private fun updateDeviceConnectionState(deviceId: String, state: ConnectionState) {
         // Update in discovered devices
         _discoveredDevices.value = _discoveredDevices.value.map { device ->
-            if (device.deviceId == deviceId) device.copy(connectionState = state) else device
+            if (device.endpointId == deviceId) device.copy(connectionState = state) else device
         }
 
         // Update connected devices list
         when (state) {
             ConnectionState.CONNECTED -> {
-                val device = _discoveredDevices.value.find { it.deviceId == deviceId }
+                val device = _discoveredDevices.value.find { it.endpointId == deviceId }
                 device?.let {
                     val connectedList = _connectedDevices.value.toMutableList()
-                    if (!connectedList.any { it.deviceId == deviceId }) {
+                    if (!connectedList.any { it.endpointId == deviceId }) {
                         connectedList.add(it.copy(connectionState = state))
                         _connectedDevices.value = connectedList
                     }
                 }
             }
             ConnectionState.DISCONNECTED -> {
-                _connectedDevices.value = _connectedDevices.value.filter { it.deviceId != deviceId }
+                _connectedDevices.value = _connectedDevices.value.filter { it.endpointId != deviceId }
             }
             else -> {
                 _connectedDevices.value = _connectedDevices.value.map { device ->
-                    if (device.deviceId == deviceId) device.copy(connectionState = state) else device
+                    if (device.endpointId == deviceId) device.copy(connectionState = state) else device
                 }
             }
         }

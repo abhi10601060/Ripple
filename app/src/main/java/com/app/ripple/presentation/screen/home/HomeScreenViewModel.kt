@@ -63,13 +63,13 @@ class HomeScreenViewModel @Inject constructor(
     }
 
     suspend fun connectDevice(device: NearbyDevice){
-        connectDeviceUseCase.invoke(device.deviceId).collect { isConnected ->
+        connectDeviceUseCase.invoke(device.endpointId).collect { isConnected ->
             Log.d(TAG, "connected to Device: ${device.deviceName} : $isConnected")
         }
     }
 
     suspend fun disconnectDevice(device: NearbyDevice){
-        disconnectDeviceUseCase.invoke(device.deviceId).collect { isDisconnected ->
+        disconnectDeviceUseCase.invoke(device.endpointId).collect { isDisconnected ->
             Log.d(TAG, "disconnected from device: ${device.deviceName} : $isDisconnected")
         }
     }

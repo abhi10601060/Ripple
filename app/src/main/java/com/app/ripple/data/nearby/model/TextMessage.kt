@@ -8,3 +8,4 @@ data class TextMessage(
     val timestamp: Long = System.currentTimeMillis(),
     val deliveryStatus: DeliveryStatus = DeliveryStatus.PENDING
 )
+
