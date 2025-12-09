@@ -10,4 +10,12 @@ class NearbyDeviceRepoImpl(private val nearbyDevicePersistenceRepo: NearbyDevice
     override  fun getAllNearbyDevices(): Flow<List<NearbyDeviceRealm>> {
         return nearbyDevicePersistenceRepo.getAllNearbyDevices()
     }
+
+    override fun getAllDiscoveredDevices(): Flow<List<NearbyDeviceRealm>> {
+        return nearbyDevicePersistenceRepo.getAllDiscoveredNearbyDevices()
+    }
+
+    override suspend fun getNearbyDeviceById(deviceId: String): Flow<NearbyDeviceRealm?> {
+        return nearbyDevicePersistenceRepo.getNearbyDeviceById(deviceId = deviceId)
+    }
 }

@@ -1,6 +1,7 @@
 package com.app.ripple.data.nearby.model
 
 import com.app.ripple.data.local.realm.model.NearbyDeviceRealm
+import com.app.ripple.domain.model.NearbyDeviceDomain
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -29,5 +30,14 @@ fun NearbyDevice.toNearbyDeviceRealm() : NearbyDeviceRealm{
         id = this.id,
         endpointId = this.endpointId,
         deviceName = this.deviceName,
+    )
+}
+
+fun NearbyDeviceDomain.toNearbyDevice(): NearbyDevice{
+    return NearbyDevice(
+        id = this.id,
+        endpointId = this.endpointId,
+        deviceName = this.deviceName,
+        connectionState= this.connectionState
     )
 }

@@ -25,7 +25,7 @@ class NearbyDeviceRealmRepo(private val realm: Realm): NearbyDevicePersistenceRe
             existingDevice?.apply {
                 endpointId = nearbyDevice.endpointId
                 deviceName = nearbyDevice.deviceName
-                _connectionState = nearbyDevice.connectionState.name
+                if(existingDevice.connectionState != ConnectionState.CONNECTED && nearbyDevice.endpointId != existingDevice.endpointId) _connectionState = nearbyDevice.connectionState.name
                 _visibility = DeviceVisibility.ONLINE.name
             }
                 ?: copyToRealm(nearbyDevice.toNearbyDeviceRealm())
@@ -48,6 +48,18 @@ class NearbyDeviceRealmRepo(private val realm: Realm): NearbyDevicePersistenceRe
         return allDevices
     }
 
+    override fun getAllDiscoveredNearbyDevices(): Flow<List<NearbyDeviceRealm>> {
+        val states = listOf<ConnectionState>(ConnectionState.DISCONNECTED, ConnectionState.CONNECTED,
+            ConnectionState.DISCOVERED).map { it.name }
+        val allDiscoveredDevices = realm.query<NearbyDeviceRealm>("_connectionState IN $0",
+            states)
+            .asFlow()
+            .map { result ->
+                result.list.toList()
+            }
+
+        return allDiscoveredDevices
+    }
 
 
     override suspend fun updateConnectionState(endpointId: String, connectionState: ConnectionState) {

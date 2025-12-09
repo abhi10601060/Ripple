@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.app.ripple.data.local.realm.model.NearbyDeviceRealm
 import com.app.ripple.data.nearby.model.NearbyDevice
+import com.app.ripple.domain.model.NearbyDeviceDomain
 import com.app.ripple.presentation.shared.CircularImage
 import com.app.ripple.presentation.ui.theme.CourierPrimeFamily
 import com.app.ripple.presentation.ui.theme.DarkBG
@@ -33,7 +34,7 @@ import com.app.ripple.presentation.ui.theme.TertiaryDarkBG
 @Composable
 fun InboxItem(
     modifier: Modifier = Modifier,
-    nearbyDevice: NearbyDevice
+    nearbyDevice: NearbyDeviceDomain
 ) {
     Row(
         modifier = modifier

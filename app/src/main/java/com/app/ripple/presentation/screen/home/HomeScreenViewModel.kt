@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.app.ripple.data.local.realm.model.NearbyDeviceRealm
 import com.app.ripple.data.nearby.model.NearbyDevice
+import com.app.ripple.domain.model.NearbyDeviceDomain
 import com.app.ripple.domain.use_case.nearby.ConnectDeviceUseCase
 import com.app.ripple.domain.use_case.nearby.DisconnectDeviceUseCase
 import com.app.ripple.domain.use_case.nearby.GetNearbyConnectedDevicesUseCase
@@ -31,11 +32,11 @@ class HomeScreenViewModel @Inject constructor(
 
     private val TAG = "HomeScreenViewModel"
 
-    private val _nearbyDiscoveredDevices = mutableStateOf(listOf<NearbyDevice>())
-    val nearbyDiscoveredDevices: State<List<NearbyDevice>> = _nearbyDiscoveredDevices
+    private val _nearbyDiscoveredDevices = mutableStateOf(listOf<NearbyDeviceDomain>())
+    val nearbyDiscoveredDevices: State<List<NearbyDeviceDomain>> = _nearbyDiscoveredDevices
 
-    private val _nearbyConnectedDevices = mutableStateOf(listOf<NearbyDeviceRealm>())
-    val nearbyConnectedDevices: State<List<NearbyDeviceRealm>> = _nearbyConnectedDevices
+    private val _nearbyConnectedDevices = mutableStateOf(listOf<NearbyDeviceDomain>())
+    val nearbyConnectedDevices: State<List<NearbyDeviceDomain>> = _nearbyConnectedDevices
 
     suspend fun getNearbyDiscoveredDevices(){
         nearbyDiscoveredDevicesUseCase.invoke().collect { devices ->
@@ -44,6 +45,7 @@ class HomeScreenViewModel @Inject constructor(
     }
 
     suspend fun startAdvertisingAndDiscovery(){
+        Log.d(TAG, "startAdvertisingAndDiscovery: started")
         startAdvertisingUseCase.invoke().collect { isStarted ->
             Log.d(TAG, "startAdvertising started: $isStarted")
         }
@@ -54,6 +56,7 @@ class HomeScreenViewModel @Inject constructor(
     }
 
     suspend fun stopAdvertisingAndDiscovery(){
+        Log.d(TAG, "stopAdvertisingAndDiscovery: stopped")
         stopAdvertisingUseCase.invoke().collect { isStopped ->
             Log.d(TAG, "stopAdvertising stopped: $isStopped")
         }
@@ -63,13 +66,13 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
-    suspend fun connectDevice(device: NearbyDevice){
+    suspend fun connectDevice(device: NearbyDeviceDomain){
         connectDeviceUseCase.invoke(device.endpointId).collect { isConnected ->
             Log.d(TAG, "connected to Device: ${device.deviceName} : $isConnected")
         }
     }
 
-    suspend fun disconnectDevice(device: NearbyDevice){
+    suspend fun disconnectDevice(device: NearbyDeviceDomain){
         disconnectDeviceUseCase.invoke(device.endpointId).collect { isDisconnected ->
             Log.d(TAG, "disconnected from device: ${device.deviceName} : $isDisconnected")
         }

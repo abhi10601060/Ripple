@@ -11,7 +11,16 @@ data class TextMessageDomain(
     val receiverId: String,
     val timestamp: Long = System.currentTimeMillis(),
     val deliveryStatus: DeliveryStatus = DeliveryStatus.FAILED
-)
+){
+    companion object{
+        val mock = TextMessageDomain(
+            content = "Hello How are you?",
+            senderId = "123",
+            receiverId = "abc",
+            timestamp = System.currentTimeMillis()
+        )
+    }
+}
 
 fun TextMessageRealm.toTextMessageDomain(): TextMessageDomain{
     return TextMessageDomain(

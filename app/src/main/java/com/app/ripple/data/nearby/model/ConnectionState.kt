@@ -10,5 +10,6 @@ enum class ConnectionState {
     CONNECTED,
     SENDING,
     RECEIVING,
-    ERROR
+    ERROR,
+    LOST
 }

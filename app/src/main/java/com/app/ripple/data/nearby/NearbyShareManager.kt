@@ -116,10 +116,18 @@ class NearbyShareManager private constructor(
                 }
                 ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
                     Log.d("NearbyShare", "Connection rejected: $endpointId")
-                    updateDeviceConnectionState(endpointId, ConnectionState.ERROR)
+                    GlobalScope.launch(Dispatchers.IO) {
+                        nearbyDevicePersistenceRepo.updateConnectionState(endpointId, ConnectionState.DISCONNECTED)
+                    }
+
+                    updateDeviceConnectionState(endpointId, ConnectionState.DISCONNECTED)
                 }
                 else -> {
                     Log.d("NearbyShare", "Connection failed: $endpointId")
+                    GlobalScope.launch(Dispatchers.IO) {
+                        nearbyDevicePersistenceRepo.updateConnectionState(endpointId, ConnectionState.ERROR)
+                    }
+
                     updateDeviceConnectionState(endpointId, ConnectionState.ERROR)
                 }
             }
@@ -159,7 +167,7 @@ class NearbyShareManager private constructor(
         override fun onEndpointLost(endpointId: String) {
             Log.d("NearbyShare", "Endpoint lost: $endpointId")
             GlobalScope.launch(Dispatchers.IO) {
-                nearbyDevicePersistenceRepo.updateConnectionState(endpointId, ConnectionState.DISCONNECTED)
+                nearbyDevicePersistenceRepo.updateConnectionState(endpointId, ConnectionState.LOST)
             }
             removeDiscoveredDevice(endpointId)
         }

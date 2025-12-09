@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.app.ripple.data.local.realm.model.toNearbyDevice
+import com.app.ripple.data.nearby.model.toNearbyDevice
 import com.app.ripple.presentation.navigation.garph.ChatScreenRoute
 import com.app.ripple.presentation.screen.home.HomeScreenViewModel
 
@@ -39,7 +40,7 @@ fun InboxScreen(
                         .clickable{
                             navController?.navigate(ChatScreenRoute(receiverDevice = connectedDevice.toNearbyDevice()))
                         },
-                    nearbyDevice = connectedDevice.toNearbyDevice()
+                    nearbyDevice = connectedDevice
                 )
                 Spacer(modifier = Modifier
                     .padding(8.dp)
