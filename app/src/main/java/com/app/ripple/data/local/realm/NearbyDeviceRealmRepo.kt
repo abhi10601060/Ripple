@@ -25,7 +25,7 @@ class NearbyDeviceRealmRepo(private val realm: Realm): NearbyDevicePersistenceRe
             existingDevice?.apply {
                 endpointId = nearbyDevice.endpointId
                 deviceName = nearbyDevice.deviceName
-                if(existingDevice.connectionState != ConnectionState.CONNECTED && nearbyDevice.endpointId != existingDevice.endpointId) _connectionState = nearbyDevice.connectionState.name
+                if(existingDevice.connectionState != ConnectionState.CONNECTED || nearbyDevice.endpointId != existingDevice.endpointId) _connectionState = nearbyDevice.connectionState.name
                 _visibility = DeviceVisibility.ONLINE.name
             }
                 ?: copyToRealm(nearbyDevice.toNearbyDeviceRealm())
@@ -79,6 +79,17 @@ class NearbyDeviceRealmRepo(private val realm: Realm): NearbyDevicePersistenceRe
             }
 
         return device
+    }
+
+    override suspend fun markAllDevicesAsLost() {
+        realm.write {
+            val allDevices = query<NearbyDeviceRealm>().find()
+            allDevices.forEach {
+                it.apply {
+                    _connectionState = ConnectionState.LOST.name
+                }
+            }
+        }
     }
 
 }

@@ -10,4 +10,6 @@ interface NearbyDeviceRepo {
     fun getAllDiscoveredDevices(): Flow<List<NearbyDeviceRealm>>
 
     suspend fun getNearbyDeviceById(deviceId: String): Flow<NearbyDeviceRealm?>
+
+    suspend fun markAllDevicesAsLost()
 }

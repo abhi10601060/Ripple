@@ -16,4 +16,6 @@ interface NearbyDevicePersistenceRepo {
     suspend fun updateConnectionState(endpointId: String, connectionState: ConnectionState)
 
     suspend fun getNearbyDeviceById(deviceId: String) : Flow<NearbyDeviceRealm?>
+
+    suspend fun markAllDevicesAsLost()
 }

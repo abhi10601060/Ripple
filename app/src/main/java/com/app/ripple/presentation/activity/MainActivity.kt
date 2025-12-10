@@ -24,7 +24,13 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavHost
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.app.ripple.background.worker.OnAppCloseWorker
 import com.app.ripple.di.Test
+import com.app.ripple.domain.use_case.nearby.StartAdvertisingUseCase
+import com.app.ripple.domain.use_case.nearby.StopAdvertisingUseCase
 import com.app.ripple.presentation.navigation.garph.MainNavGraphRoute
 import com.app.ripple.presentation.navigation.garph.mainGraph
 import com.app.ripple.presentation.screen.audio_test.AudioRecorderScreen
@@ -32,14 +38,23 @@ import com.app.ripple.presentation.screen.message.NearbyShareScreen
 import com.app.ripple.presentation.screen.splash.SplashScreen
 import com.app.ripple.presentation.ui.theme.RippleTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val PERMISSION_LIST = getPerMissionList()
+    private val TAG = "MainActivity"
 
     @Inject lateinit var testData : Test
+
+    @Inject lateinit var startAdvertisingUseCase: StartAdvertisingUseCase
+    @Inject lateinit var startDiscoveryUseCase: StartAdvertisingUseCase
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,6 +79,32 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        startAdvertisingAndDiscovery()
+    }
+
+    fun startAdvertisingAndDiscovery(){
+        CoroutineScope(Dispatchers.Default).launch {
+            startAdvertisingUseCase.invoke().collect {
+                Log.d(TAG, "onStart: startAdvertisingUseCase : $it")
+            }
+        }
+
+        CoroutineScope(Dispatchers.Default).launch {
+            startDiscoveryUseCase.invoke().collect {
+                Log.d(TAG, "onStart: startDiscoveryUseCase : $it")
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d("MainActivity", "onStart: ")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("MainActivity", "onDestroy: ")
     }
 
     @Composable

@@ -54,9 +54,9 @@ fun HomeScreen(
     }
 
     LaunchedEffect(key1 = true) {
-        CoroutineScope(Dispatchers.Default).launch{
-            viewModel.startAdvertisingAndDiscovery()
-        }
+//        CoroutineScope(Dispatchers.Default).launch{
+//            viewModel.startAdvertisingAndDiscovery()
+//        }
 
         CoroutineScope(Dispatchers.IO).launch {
             viewModel.getNearbyDiscoveredDevices()
@@ -67,13 +67,13 @@ fun HomeScreen(
         }
     }
 
-    DisposableEffect(key1 = true) {
-        onDispose {
-            CoroutineScope(Dispatchers.Default).launch {
-                viewModel.stopAdvertisingAndDiscovery()
-            }
-        }
-    }
+//    DisposableEffect(key1 = true) {
+//        onDispose {
+//            CoroutineScope(Dispatchers.Default).launch {
+//                viewModel.stopAdvertisingAndDiscovery()
+//            }
+//        }
+//    }
 
     Box(
         modifier = modifier

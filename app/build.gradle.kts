@@ -78,6 +78,9 @@ dependencies {
     //Coil
     implementation(libs.coil.compose)
 
+    // Work Manager
+    implementation(libs.androidx.work.runtime.ktx)
+
     //Type Safe navigation
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
@@ -87,6 +90,9 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation("androidx.hilt:hilt-work:1.0.0")
+    ksp("androidx.hilt:hilt-compiler:1.0.0")
+
 
     // Google Font
     implementation ("androidx.compose.ui:ui-text-google-fonts:1.9.5")
