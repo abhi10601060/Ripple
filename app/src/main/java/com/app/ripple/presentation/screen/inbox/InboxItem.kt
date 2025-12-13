@@ -11,10 +11,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,10 +26,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.app.ripple.data.local.realm.model.NearbyDeviceRealm
-import com.app.ripple.data.nearby.model.NearbyDevice
+import com.app.ripple.data.nearby.model.ConnectionState
+import com.app.ripple.data.nearby.model.DeviceVisibility
 import com.app.ripple.domain.model.NearbyDeviceDomain
 import com.app.ripple.presentation.shared.CircularImage
+import com.app.ripple.presentation.shared.formatTimestamp
 import com.app.ripple.presentation.ui.theme.CourierPrimeFamily
 import com.app.ripple.presentation.ui.theme.DarkBG
 import com.app.ripple.presentation.ui.theme.TertiaryDarkBG
@@ -42,7 +46,9 @@ fun InboxItem(
             .background(DarkBG)
             .padding(start = 5.dp)
     ) {
-        ProfileImageSection()
+        ProfileImageSection(
+            nearbyDevice = nearbyDevice
+        )
 
         Column(
             modifier = Modifier
@@ -65,7 +71,7 @@ fun InboxItem(
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "This is Latest message from abhi to shubham which is saying about something I dont know for real",
+                text = if(nearbyDevice.recentMessage == null) "Start conversation..." else nearbyDevice.recentMessage.content,
                 color = TertiaryDarkBG,
                 fontSize = 15.sp,
                 fontFamily = CourierPrimeFamily,
@@ -79,11 +85,11 @@ fun InboxItem(
             verticalAlignment = Alignment.CenterVertically
         ){
             Text(
-                text =  "Yesterday",
+                text =  if (nearbyDevice.recentMessage == null) "" else formatTimestamp(nearbyDevice.recentMessage.timestamp),
                 color = Color.Gray,
                 fontSize = 12.sp,
                 fontFamily = CourierPrimeFamily,
-                fontWeight = FontWeight.Thin,
+                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(top = 5.dp)
             )
 
@@ -102,7 +108,10 @@ fun InboxItem(
 }
 
 @Composable
-fun ProfileImageSection(modifier: Modifier = Modifier) {
+fun ProfileImageSection(
+    modifier: Modifier = Modifier,
+    nearbyDevice: NearbyDeviceDomain
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -112,7 +121,7 @@ fun ProfileImageSection(modifier: Modifier = Modifier) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Default.Cancel,
+                imageVector = if(nearbyDevice.visibility == DeviceVisibility.ONLINE) Icons.Default.CheckCircle else Icons.Default.Cancel,
                 contentDescription = "disconnected",
                 tint = Color.White,
                 modifier = Modifier
@@ -121,7 +130,7 @@ fun ProfileImageSection(modifier: Modifier = Modifier) {
             )
             Spacer(modifier = Modifier.width(3.dp))
             Text(
-                text = "Offline",
+                text = if(nearbyDevice.visibility == DeviceVisibility.ONLINE) "Online" else "Offline",
                 color = Color.White,
                 fontSize = 10.sp,
                 fontFamily = CourierPrimeFamily
