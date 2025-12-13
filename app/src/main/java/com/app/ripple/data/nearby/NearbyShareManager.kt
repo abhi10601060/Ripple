@@ -108,25 +108,15 @@ class NearbyShareManager private constructor(
                 ConnectionsStatusCodes.STATUS_OK -> {
                     Log.d("NearbyShare", "Connected to: $endpointId")
 
-                    GlobalScope.launch(Dispatchers.IO) {
-                        nearbyDevicePersistenceRepo.updateConnectionState(endpointId, ConnectionState.CONNECTED)
-                    }
-
                     updateDeviceConnectionState(endpointId, ConnectionState.CONNECTED)
                 }
                 ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
                     Log.d("NearbyShare", "Connection rejected: $endpointId")
-                    GlobalScope.launch(Dispatchers.IO) {
-                        nearbyDevicePersistenceRepo.updateConnectionState(endpointId, ConnectionState.DISCONNECTED)
-                    }
 
                     updateDeviceConnectionState(endpointId, ConnectionState.DISCONNECTED)
                 }
                 else -> {
                     Log.d("NearbyShare", "Connection failed: $endpointId")
-                    GlobalScope.launch(Dispatchers.IO) {
-                        nearbyDevicePersistenceRepo.updateConnectionState(endpointId, ConnectionState.ERROR)
-                    }
 
                     updateDeviceConnectionState(endpointId, ConnectionState.ERROR)
                 }
@@ -135,10 +125,6 @@ class NearbyShareManager private constructor(
 
         override fun onDisconnected(endpointId: String) {
             Log.d("NearbyShare", "Disconnected from: $endpointId")
-
-            GlobalScope.launch(Dispatchers.IO) {
-                nearbyDevicePersistenceRepo.updateConnectionState(endpointId, ConnectionState.DISCONNECTED)
-            }
 
             updateDeviceConnectionState(endpointId, ConnectionState.DISCONNECTED)
             connectionPool.remove(endpointId)
@@ -166,9 +152,7 @@ class NearbyShareManager private constructor(
 
         override fun onEndpointLost(endpointId: String) {
             Log.d("NearbyShare", "Endpoint lost: $endpointId")
-            GlobalScope.launch(Dispatchers.IO) {
-                nearbyDevicePersistenceRepo.updateConnectionState(endpointId, ConnectionState.LOST)
-            }
+            updateDeviceConnectionState(endpointId, ConnectionState.LOST)
             removeDiscoveredDevice(endpointId)
         }
     }
@@ -307,6 +291,10 @@ class NearbyShareManager private constructor(
         emit(true)
     }
 
+    fun stopAllEndpoints(){
+        connectionsClient.stopAllEndpoints()
+    }
+
     fun sendTextMessage(message: TextMessage): Flow<Boolean> = flow {
         val serialisedMessage = Gson().toJson(message.toTextMessageDto())
         Log.d(TAG, "sendTextMessage: $serialisedMessage")
@@ -378,6 +366,11 @@ class NearbyShareManager private constructor(
     }
 
     private fun updateDeviceConnectionState(deviceId: String, state: ConnectionState) {
+        // Update in Realm
+        GlobalScope.launch(Dispatchers.IO) {
+            nearbyDevicePersistenceRepo.updateConnectionState(deviceId, state)
+        }
+
         // Update in discovered devices
         _discoveredDevices.value = _discoveredDevices.value.map { device ->
             if (device.endpointId == deviceId) device.copy(connectionState = state) else device

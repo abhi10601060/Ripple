@@ -86,6 +86,7 @@ class NearbyDeviceRealmRepo(private val realm: Realm): NearbyDevicePersistenceRe
             val allDevices = query<NearbyDeviceRealm>().find()
             allDevices.forEach {
                 it.apply {
+                    Log.d(TAG, "markAllDevicesAsLost: ${this.deviceName} is marked as lost")
                     _connectionState = ConnectionState.LOST.name
                 }
             }

@@ -1,6 +1,7 @@
 package com.app.ripple.di
 
 import android.content.Context
+import com.app.ripple.background.ComprehensiveCleanupManager
 import com.app.ripple.data.audio_recording.AudioRecordingManager
 import com.app.ripple.data.local.contract.NearbyDevicePersistenceRepo
 import com.app.ripple.data.local.contract.TextMessagePersistenceRepo
@@ -78,6 +79,12 @@ object AppModule {
     @Singleton
     fun providesAudioManager(@ApplicationContext context: Context): AudioRecordingManager {
         return AudioRecordingManager.getInstance(context)
+    }
+
+    @Provides
+    @Singleton
+    fun providesComprehensiveCleanupManager(nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo, nearbyShareManager: NearbyShareManager) : ComprehensiveCleanupManager{
+        return ComprehensiveCleanupManager(nearbyDevicePersistenceRepo, nearbyShareManager)
     }
 }
 

@@ -1,6 +1,7 @@
 package com.app.ripple.presentation.activity
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -16,33 +17,24 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.content.ContextCompat
-import androidx.navigation.NavHost
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import androidx.work.OneTimeWorkRequest
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import com.app.ripple.background.worker.OnAppCloseWorker
+import com.app.ripple.background.service.CleanupService
 import com.app.ripple.di.Test
+import com.app.ripple.domain.use_case.nearby.MarkAllDevicesAsLostUseCase
 import com.app.ripple.domain.use_case.nearby.StartAdvertisingUseCase
-import com.app.ripple.domain.use_case.nearby.StopAdvertisingUseCase
+import com.app.ripple.domain.use_case.nearby.StartDiscoveryUseCase
 import com.app.ripple.presentation.navigation.garph.MainNavGraphRoute
 import com.app.ripple.presentation.navigation.garph.mainGraph
-import com.app.ripple.presentation.screen.audio_test.AudioRecorderScreen
-import com.app.ripple.presentation.screen.message.NearbyShareScreen
-import com.app.ripple.presentation.screen.splash.SplashScreen
 import com.app.ripple.presentation.ui.theme.RippleTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.jvm.java
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -53,12 +45,17 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var testData : Test
 
     @Inject lateinit var startAdvertisingUseCase: StartAdvertisingUseCase
-    @Inject lateinit var startDiscoveryUseCase: StartAdvertisingUseCase
+    @Inject lateinit var startDiscoveryUseCase: StartDiscoveryUseCase
+    @Inject lateinit var markAllDevicesAsLostUseCase: MarkAllDevicesAsLostUseCase
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        startCleanupService()
+        startAdvertisingAndDiscovery()
+
         setContent {
             RippleTheme {
                 val permissionLauncher = rememberLauncherForActivityResult(
@@ -79,8 +76,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-        startAdvertisingAndDiscovery()
     }
 
     fun startAdvertisingAndDiscovery(){
@@ -97,9 +92,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    fun startCleanupService(){
+        startService(Intent(this, CleanupService::class.java))
+    }
+
     override fun onStart() {
         super.onStart()
-        Log.d("MainActivity", "onStart: ")
     }
 
     override fun onDestroy() {
