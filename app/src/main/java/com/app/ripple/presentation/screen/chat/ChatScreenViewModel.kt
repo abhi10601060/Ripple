@@ -14,6 +14,7 @@ import com.app.ripple.domain.model.NearbyDeviceDomain
 import com.app.ripple.domain.use_case.chat.GetReceivedMessageUseCase
 import com.app.ripple.domain.use_case.chat.GetSentMessageUseCase
 import com.app.ripple.domain.use_case.chat.SendTextMessageUseCase
+import com.app.ripple.domain.use_case.nearby.ConnectDeviceUseCase
 import com.app.ripple.domain.use_case.nearby.GetNearbyDeviceByIdUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +26,8 @@ class ChatScreenViewModel @Inject constructor(
     private val sendTextMessageUseCase: SendTextMessageUseCase,
     private val getSentMessageUseCase: GetSentMessageUseCase,
     private val getReceivedMessageUseCase: GetReceivedMessageUseCase,
-    private val getNearbyDeviceByIdUseCase: GetNearbyDeviceByIdUseCase
+    private val getNearbyDeviceByIdUseCase: GetNearbyDeviceByIdUseCase,
+    private val connectDeviceUseCase: ConnectDeviceUseCase,
 ) : ViewModel() {
 
     private val TAG = "ChatScreenViewModel"
@@ -84,6 +86,14 @@ class ChatScreenViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             getNearbyDeviceByIdUseCase.invoke(id = receiverDevice.id).collect {
                 _receiverDeviceDomain.value = it
+            }
+        }
+    }
+
+    fun connectToDevice(device: NearbyDeviceDomain){
+        viewModelScope.launch {
+            connectDeviceUseCase.invoke(deviceId = device.endpointId).collect { isConnected ->
+                Log.d(TAG, "connected to Device: ${device.deviceName} : $isConnected")
             }
         }
     }

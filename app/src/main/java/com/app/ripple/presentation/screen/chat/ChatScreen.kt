@@ -1,6 +1,7 @@
 package com.app.ripple.presentation.screen.chat
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -9,12 +10,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBackIosNew
 import androidx.compose.material.icons.rounded.Send
@@ -34,10 +37,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.app.ripple.data.local.realm.model.toTextMessage
+import com.app.ripple.data.nearby.model.ConnectionState
+import com.app.ripple.data.nearby.model.DeviceVisibility
 import com.app.ripple.data.nearby.model.NearbyDevice
 import com.app.ripple.presentation.shared.CircularImage
 import com.app.ripple.presentation.shared.Ripple
 import com.app.ripple.presentation.shared.RippleTextField
+import com.app.ripple.presentation.ui.theme.CourierPrimeFamily
 import com.app.ripple.presentation.ui.theme.DarkBG
 import com.app.ripple.presentation.ui.theme.MontserratFamily
 import kotlinx.coroutines.launch
@@ -128,36 +134,63 @@ fun ChatScreen(
                 .padding(10.dp)
                 .fillMaxWidth()
         ){
-            RippleTextField(
-                value = typedMessage,
-                onValueChange = {
-                    typedMessage = it
-                },
-                placeholder = "Type a message..."
-            )
-
-            Ripple(
-                modifier = Modifier
-                    .padding(end = 6.dp)
-                    .align(Alignment.CenterEnd)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = ripple(),
-                        onClick = {
-                            viewModel.sendTextMessage(typedMessage)
-                            typedMessage = ""
-                        }
-                    ),
-                size= 40.dp
-            ) {
-                Icon(
-                    modifier = Modifier
-                        .size(10.dp),
-                    imageVector = Icons.Rounded.Send,
-                    contentDescription = "Send Button",
-                    tint = Color.Black
-                )
+            if(receiverDeviceDomain?.visibility == DeviceVisibility.OFFLINE){
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                        .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
+                    contentAlignment = Alignment.Center
+                ){
+                    Text(text = "Device offline. Cannot connect...", color = Color.Gray, fontFamily = CourierPrimeFamily)
+                }
             }
+            else if(receiverDeviceDomain?.connectionState == ConnectionState.CONNECTED){
+                RippleTextField(
+                    value = typedMessage,
+                    onValueChange = {
+                        typedMessage = it
+                    },
+                    placeholder = "Type a message..."
+                )
+
+                Ripple(
+                    modifier = Modifier
+                        .padding(end = 6.dp)
+                        .align(Alignment.CenterEnd)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = ripple(),
+                            onClick = {
+                                viewModel.sendTextMessage(typedMessage)
+                                typedMessage = ""
+                            }
+                        ),
+                    size= 40.dp
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .size(10.dp),
+                        imageVector = Icons.Rounded.Send,
+                        contentDescription = "Send Button",
+                        tint = Color.Black
+                    )
+                }
+            }
+            else{
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                        .clickable{
+                            receiverDeviceDomain?.let {
+                                viewModel.connectToDevice(it)
+                            }
+                        }
+                        .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center,
+                ){
+                    Text(text = "Tap to connect...", color = Color.Gray, fontFamily = CourierPrimeFamily)
+                }
+            }
+
         }
     }
 }
