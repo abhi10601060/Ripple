@@ -21,4 +21,6 @@ interface NearbyShareRepo {
     fun createCluster(): Flow<String>
     fun joinCluster(clusterId: String): Flow<Boolean>
     fun leaveCluster(): Flow<Boolean>
+    fun acceptConnection(endpointId: String)
+    fun rejectConnection(endpointId: String)
 }

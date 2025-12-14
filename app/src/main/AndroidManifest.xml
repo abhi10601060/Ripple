@@ -46,6 +46,10 @@
         <service android:name=".background.service.CleanupService"
             android:exported="false"
             android:stopWithTask="false"/>
+
+        <receiver android:name=".presentation.notification.receivers.ConnectionRequestActionReceiver"
+            android:exported="false"
+            android:enabled="true"/>
     </application>
 
 </manifest>

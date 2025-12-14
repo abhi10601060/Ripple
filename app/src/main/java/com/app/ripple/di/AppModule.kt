@@ -14,6 +14,7 @@ import com.app.ripple.data.repo.NearbyDeviceRepoImpl
 import com.app.ripple.data.repo.NearbyShareRepoImpl
 import com.app.ripple.domain.repo.NearbyDeviceRepo
 import com.app.ripple.domain.repo.NearbyShareRepo
+import com.app.ripple.presentation.notification.ConnectionRequestNotificationManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -57,10 +58,17 @@ object AppModule {
         return TextMessageRealmRepo(realm)
     }
 
+
+    @Singleton
+    @Provides
+    fun providesConnectionRequestNotificationManager(@ApplicationContext applicationContext: Context) : ConnectionRequestNotificationManager{
+        return ConnectionRequestNotificationManager(context = applicationContext)
+    }
+
     @Provides
     @Singleton
-    fun providesNearbyShareManager(@ApplicationContext context: Context, nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo, textMessagePersistenceRepo: TextMessagePersistenceRepo) : NearbyShareManager{
-        return NearbyShareManager.getInstance(context, nearbyDevicePersistenceRepo, textMessagePersistenceRepo)
+    fun providesNearbyShareManager(@ApplicationContext context: Context, nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo, textMessagePersistenceRepo: TextMessagePersistenceRepo, connectionRequestNotificationManager: ConnectionRequestNotificationManager) : NearbyShareManager{
+        return NearbyShareManager.getInstance(context, nearbyDevicePersistenceRepo, textMessagePersistenceRepo, connectionRequestNotificationManager)
     }
 
     @Provides

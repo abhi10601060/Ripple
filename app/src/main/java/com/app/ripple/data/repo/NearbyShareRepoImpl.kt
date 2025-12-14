@@ -53,4 +53,7 @@ class NearbyShareRepoImpl(
         nearbyShareManager.joinCluster(clusterId)
 
     override fun leaveCluster(): Flow<Boolean> = nearbyShareManager.leaveCluster()
+
+    override fun acceptConnection(endpointId: String) = nearbyShareManager.acceptConnection(endpointId)
+    override fun rejectConnection(endpointId: String) = nearbyShareManager.rejectConnection(endpointId)
 }

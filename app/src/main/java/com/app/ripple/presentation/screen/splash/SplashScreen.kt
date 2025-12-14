@@ -74,7 +74,10 @@ fun SplashScreen(
                 fontFamily = MontserratFamily,
                 fontWeight = FontWeight.ExtraBold,
                 modifier = Modifier.clickable{
-                    ConnectionRequestNotificationManager(context = context).showConnectionRequestNotification()
+                    ConnectionRequestNotificationManager(context = context).showConnectionRequestNotification(
+                        deviceName = "Abhi",
+                        endpointId = "abcd"
+                    )
                 }
             )
 

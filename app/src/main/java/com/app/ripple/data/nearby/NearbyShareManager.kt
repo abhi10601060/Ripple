@@ -15,6 +15,7 @@ import com.app.ripple.data.nearby.model.DeliveryStatus
 import com.app.ripple.data.nearby.model.NearbyDevice
 import com.app.ripple.data.nearby.model.TextMessage
 import com.app.ripple.data.nearby.model.toTextMessageRealm
+import com.app.ripple.presentation.notification.ConnectionRequestNotificationManager
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.AdvertisingOptions
 import com.google.android.gms.nearby.connection.ConnectionInfo
@@ -47,23 +48,30 @@ import kotlin.coroutines.resumeWithException
 class NearbyShareManager private constructor(
     private val context: Context,
     private val nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo,
-    private val TextMessagePersitenceRepo: TextMessagePersistenceRepo)
-{
+    private val textMessagePersistenceRepo: TextMessagePersistenceRepo,
+    private val connectionRequestNotificationManager: ConnectionRequestNotificationManager
+) {
 
     private val TAG = "NearbyShareManager"
     private val connectionPool = mutableStateMapOf<String, String>()
+    private var iRejected = false
 
     companion object {
         @SuppressLint("StaticFieldLeak")
         @Volatile
         private var INSTANCE: NearbyShareManager? = null
 
-        fun getInstance(context: Context, nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo, textMessagePersistenceRepo: TextMessagePersistenceRepo): NearbyShareManager {
+        fun getInstance(context: Context,
+                        nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo,
+                        textMessagePersistenceRepo: TextMessagePersistenceRepo,
+                        connectionRequestNotificationManager: ConnectionRequestNotificationManager
+        ): NearbyShareManager {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: NearbyShareManager(
                     context.applicationContext,
                     nearbyDevicePersistenceRepo,
-                    textMessagePersistenceRepo
+                    textMessagePersistenceRepo,
+                    connectionRequestNotificationManager
                 ).also { INSTANCE = it }
             }
         }
@@ -98,26 +106,39 @@ class NearbyShareManager private constructor(
     @OptIn(DelicateCoroutinesApi::class)
     private val connectionLifecycleCallback = object : ConnectionLifecycleCallback() {
         override fun onConnectionInitiated(endpointId: String, info: ConnectionInfo) {
-            Log.d("NearbyShare", "Connection initiated with: ${info.endpointName}")
-            connectionsClient.acceptConnection(endpointId, payloadCallback)
-//            connectionPool.put(endpointId, info.endpointName)
+            Log.d("NearbyShare", "Connection initiated with: ${info.endpointName} : $endpointId")
+            if(info.isIncomingConnection) connectionRequestNotificationManager.showConnectionRequestNotification(deviceName= info.endpointName, endpointId = endpointId)
+            else connectionsClient.acceptConnection(endpointId, payloadCallback)
         }
 
         override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
             when (result.status.statusCode) {
                 ConnectionsStatusCodes.STATUS_OK -> {
                     Log.d("NearbyShare", "Connected to: $endpointId")
-
+                    discoveredDevices.value.forEach {
+                        if (it.endpointId == endpointId){
+                            connectionRequestNotificationManager.showConnectionAcceptedNotification(it.deviceName)
+                            return@forEach
+                        }
+                    }
                     updateDeviceConnectionState(endpointId, ConnectionState.CONNECTED)
                 }
                 ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
                     Log.d("NearbyShare", "Connection rejected: $endpointId")
+                    result.status.status
+                    if (!iRejected){
+                        discoveredDevices.value.forEach {
+                            if (it.endpointId == endpointId){
+                                connectionRequestNotificationManager.showConnectionRejectedNotification(it.deviceName)
+                                return@forEach
+                            }
+                        }
+                    }
 
                     updateDeviceConnectionState(endpointId, ConnectionState.DISCONNECTED)
                 }
                 else -> {
                     Log.d("NearbyShare", "Connection failed: $endpointId")
-
                     updateDeviceConnectionState(endpointId, ConnectionState.ERROR)
                 }
             }
@@ -125,9 +146,13 @@ class NearbyShareManager private constructor(
 
         override fun onDisconnected(endpointId: String) {
             Log.d("NearbyShare", "Disconnected from: $endpointId")
-
+            discoveredDevices.value.forEach {
+                if (it.endpointId == endpointId){
+                    connectionRequestNotificationManager.showDeviceDisconnectedNotification(it.deviceName)
+                    return@forEach
+                }
+            }
             updateDeviceConnectionState(endpointId, ConnectionState.DISCONNECTED)
-            connectionPool.remove(endpointId)
         }
     }
 
@@ -173,7 +198,7 @@ class NearbyShareManager private constructor(
                 )
 
                 GlobalScope.launch(Dispatchers.IO) {
-                    TextMessagePersitenceRepo.insertReceivedMessage(message.toTextMessageRealm())
+                    textMessagePersistenceRepo.insertReceivedMessage(message.toTextMessageRealm())
                 }
 
                 addReceivedMessage(message)
@@ -187,7 +212,7 @@ class NearbyShareManager private constructor(
                     Log.d("NearbyShare", "Payload transfer successful")
 
                     GlobalScope.launch(Dispatchers.IO) {
-                        TextMessagePersitenceRepo.updateDeliveryStatus(update.payloadId, DeliveryStatus.DELIVERED)
+                        textMessagePersistenceRepo.updateDeliveryStatus(update.payloadId, DeliveryStatus.DELIVERED)
                     }
 
                     updateMessageDeliveryStatus(endpointId, DeliveryStatus.DELIVERED)
@@ -196,7 +221,7 @@ class NearbyShareManager private constructor(
                     Log.d("NearbyShare", "Payload transfer failed")
 
                     GlobalScope.launch(Dispatchers.IO) {
-                        TextMessagePersitenceRepo.updateDeliveryStatus(update.payloadId, DeliveryStatus.DELIVERED)
+                        textMessagePersistenceRepo.updateDeliveryStatus(update.payloadId, DeliveryStatus.DELIVERED)
                     }
 
                     updateMessageDeliveryStatus(endpointId, DeliveryStatus.FAILED)
@@ -206,6 +231,17 @@ class NearbyShareManager private constructor(
                 }
             }
         }
+    }
+
+    // Connection Actions
+    fun acceptConnection(endpointId: String) {
+        Log.d(TAG, "acceptConnection: $endpointId")
+        connectionsClient.acceptConnection(endpointId, payloadCallback)
+    }
+
+    fun rejectConnection(endpointId: String){
+        connectionsClient.rejectConnection(endpointId)
+        this.iRejected = true
     }
 
     // Public API Methods
@@ -304,7 +340,7 @@ class NearbyShareManager private constructor(
             val result = connectionsClient.sendPayload(message.endpointId, payload).await()
 
             GlobalScope.launch(Dispatchers.IO) {
-                TextMessagePersitenceRepo.insertSentMessage(message.toTextMessageRealm())
+                textMessagePersistenceRepo.insertSentMessage(message.toTextMessageRealm())
             }
 
             addSentMessage(message.copy(deliveryStatus = DeliveryStatus.SENT))
