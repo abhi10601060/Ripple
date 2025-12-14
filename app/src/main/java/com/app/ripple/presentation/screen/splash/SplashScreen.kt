@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.app.ripple.R
 import com.app.ripple.presentation.navigation.garph.HomeScreenRoute
+import com.app.ripple.presentation.notification.ConnectionRequestNotificationManager
 import com.app.ripple.presentation.shared.RippleLogo
 import com.app.ripple.presentation.shared.RippleTextButton
 import com.app.ripple.presentation.shared.RippleTextField
@@ -42,6 +45,8 @@ fun SplashScreen(
     modifier: Modifier = Modifier,
     navController: NavController? = null
 ) {
+
+    val context = LocalContext.current
 
     var userNameValue by remember {
         mutableStateOf("")
@@ -67,7 +72,10 @@ fun SplashScreen(
                 fontSize = 40.sp,
                 color = Color.White,
                 fontFamily = MontserratFamily,
-                fontWeight = FontWeight.ExtraBold
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.clickable{
+                    ConnectionRequestNotificationManager(context = context).showConnectionRequestNotification()
+                }
             )
 
             AnimatedVisibility(
