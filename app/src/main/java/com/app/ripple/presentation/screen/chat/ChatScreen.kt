@@ -137,7 +137,8 @@ fun ChatScreen(
             if(receiverDeviceDomain?.visibility == DeviceVisibility.OFFLINE){
                 Box(
                     modifier = Modifier.fillMaxWidth()
-                        .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
+                        .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+                        .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ){
                     Text(text = "Device offline. Cannot connect...", color = Color.Gray, fontFamily = CourierPrimeFamily)

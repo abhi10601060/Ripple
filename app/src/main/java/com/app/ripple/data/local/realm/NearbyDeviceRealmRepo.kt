@@ -67,6 +67,7 @@ class NearbyDeviceRealmRepo(private val realm: Realm): NearbyDevicePersistenceRe
             val discoveredDevice = query(NearbyDeviceRealm::class, "endpointId == $0", endpointId).first().find()
             discoveredDevice?.apply {
                 this._connectionState = connectionState.name
+                if (connectionState == ConnectionState.LOST) this._visibility = DeviceVisibility.OFFLINE.name
             }
         }
     }
@@ -88,6 +89,7 @@ class NearbyDeviceRealmRepo(private val realm: Realm): NearbyDevicePersistenceRe
                 it.apply {
                     Log.d(TAG, "markAllDevicesAsLost: ${this.deviceName} is marked as lost")
                     _connectionState = ConnectionState.LOST.name
+                    _visibility = DeviceVisibility.OFFLINE.name
                 }
             }
         }
