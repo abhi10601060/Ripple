@@ -35,6 +35,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.app.ripple.data.local.realm.model.toTextMessage
 import com.app.ripple.data.nearby.model.ConnectionState
@@ -61,19 +64,32 @@ fun ChatScreen(
         viewModel.receiverDeviceDomain
     }
 
-    val receivedMessages by remember {
-        viewModel.receivedMessages
-    }
-
-    val sentMessages by remember {
-        viewModel.sentMessages
-    }
-
     val chatScrollState = rememberLazyListState()
 
     val allMessages by  remember {
         derivedStateOf {
             receiverDeviceDomain?.allMessages ?: listOf()
+        }
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> { viewModel.setChatScreenVisibleFor( receiverDevice.id ) }
+                Lifecycle.Event.ON_PAUSE -> { viewModel.removeChatScreeIsVisibleFor() }
+                Lifecycle.Event.ON_CREATE -> {}
+                Lifecycle.Event.ON_START -> {}
+                Lifecycle.Event.ON_STOP -> {}
+                Lifecycle.Event.ON_DESTROY -> {}
+                Lifecycle.Event.ON_ANY -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 

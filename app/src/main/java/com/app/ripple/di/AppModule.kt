@@ -1,6 +1,7 @@
 package com.app.ripple.di
 
 import android.content.Context
+import android.content.SharedPreferences
 import com.app.ripple.background.ComprehensiveCleanupManager
 import com.app.ripple.data.audio_recording.AudioRecordingManager
 import com.app.ripple.data.local.contract.NearbyDevicePersistenceRepo
@@ -14,6 +15,7 @@ import com.app.ripple.data.repo.NearbyDeviceRepoImpl
 import com.app.ripple.data.repo.NearbyShareRepoImpl
 import com.app.ripple.domain.repo.NearbyDeviceRepo
 import com.app.ripple.domain.repo.NearbyShareRepo
+import com.app.ripple.presentation.notification.ChatNotificationManager
 import com.app.ripple.presentation.notification.ConnectionRequestNotificationManager
 import dagger.Module
 import dagger.Provides
@@ -48,6 +50,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun providesSharedPreference(@ApplicationContext context: Context): SharedPreferences{
+        return context.getSharedPreferences("ripple_shared_pref", Context.MODE_PRIVATE)
+    }
+
+    @Provides
+    @Singleton
     fun providesNearbyDeviceRealmRepo(realm: Realm) : NearbyDevicePersistenceRepo{
         return NearbyDeviceRealmRepo(realm)
     }
@@ -65,10 +73,22 @@ object AppModule {
         return ConnectionRequestNotificationManager(context = applicationContext)
     }
 
+    @Singleton
+    @Provides
+    fun providesChatNotificationManager(@ApplicationContext applicationContext: Context, sharedPreferences: SharedPreferences) : ChatNotificationManager{
+        return ChatNotificationManager(context = applicationContext, sharedPreferences = sharedPreferences)
+    }
+
     @Provides
     @Singleton
-    fun providesNearbyShareManager(@ApplicationContext context: Context, nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo, textMessagePersistenceRepo: TextMessagePersistenceRepo, connectionRequestNotificationManager: ConnectionRequestNotificationManager) : NearbyShareManager{
-        return NearbyShareManager.getInstance(context, nearbyDevicePersistenceRepo, textMessagePersistenceRepo, connectionRequestNotificationManager)
+    fun providesNearbyShareManager(
+        @ApplicationContext context: Context,
+        nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo,
+        textMessagePersistenceRepo: TextMessagePersistenceRepo,
+        connectionRequestNotificationManager: ConnectionRequestNotificationManager,
+        chatNotificationManager: ChatNotificationManager
+    ) : NearbyShareManager{
+        return NearbyShareManager.getInstance(context, nearbyDevicePersistenceRepo, textMessagePersistenceRepo, connectionRequestNotificationManager, chatNotificationManager)
     }
 
     @Provides

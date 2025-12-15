@@ -15,6 +15,7 @@ import com.app.ripple.data.nearby.model.DeliveryStatus
 import com.app.ripple.data.nearby.model.NearbyDevice
 import com.app.ripple.data.nearby.model.TextMessage
 import com.app.ripple.data.nearby.model.toTextMessageRealm
+import com.app.ripple.presentation.notification.ChatNotificationManager
 import com.app.ripple.presentation.notification.ConnectionRequestNotificationManager
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.AdvertisingOptions
@@ -35,11 +36,13 @@ import com.google.gson.Gson
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
@@ -49,7 +52,8 @@ class NearbyShareManager private constructor(
     private val context: Context,
     private val nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo,
     private val textMessagePersistenceRepo: TextMessagePersistenceRepo,
-    private val connectionRequestNotificationManager: ConnectionRequestNotificationManager
+    private val connectionRequestNotificationManager: ConnectionRequestNotificationManager,
+    private val chatNotificationManager: ChatNotificationManager
 ) {
 
     private val TAG = "NearbyShareManager"
@@ -64,14 +68,16 @@ class NearbyShareManager private constructor(
         fun getInstance(context: Context,
                         nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo,
                         textMessagePersistenceRepo: TextMessagePersistenceRepo,
-                        connectionRequestNotificationManager: ConnectionRequestNotificationManager
+                        connectionRequestNotificationManager: ConnectionRequestNotificationManager,
+                        chatNotificationManager: ChatNotificationManager
         ): NearbyShareManager {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: NearbyShareManager(
                     context.applicationContext,
                     nearbyDevicePersistenceRepo,
                     textMessagePersistenceRepo,
-                    connectionRequestNotificationManager
+                    connectionRequestNotificationManager,
+                    chatNotificationManager
                 ).also { INSTANCE = it }
             }
         }
@@ -199,6 +205,19 @@ class NearbyShareManager private constructor(
 
                 GlobalScope.launch(Dispatchers.IO) {
                     textMessagePersistenceRepo.insertReceivedMessage(message.toTextMessageRealm())
+                }
+
+                GlobalScope.launch(Dispatchers.IO) {
+                    nearbyDevicePersistenceRepo.getNearbyDeviceById(message.senderId).take(1).collect { nearbyDevice ->
+                        launch(Dispatchers.Main) {
+                            Log.d(TAG, "onPayloadReceived: get device in payload ${nearbyDevice?.deviceName}")
+                            chatNotificationManager.showChatMessage(
+                                userId = message.senderId,
+                                userName = nearbyDevice?.deviceName.toString(),
+                                messageText = message.content
+                            )
+                        }
+                    }
                 }
 
                 addReceivedMessage(message)

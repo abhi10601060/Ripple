@@ -2,12 +2,14 @@ package com.app.ripple.presentation.screen.chat
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.provider.Settings
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.ripple.data.local.sharedpreferences.SharedprefConstants
 import com.app.ripple.data.nearby.model.NearbyDevice
 import com.app.ripple.data.nearby.model.TextMessage
 import com.app.ripple.domain.model.NearbyDeviceDomain
@@ -20,6 +22,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import androidx.core.content.edit
+import com.app.ripple.presentation.notification.ChatNotificationManager
 
 @HiltViewModel
 class ChatScreenViewModel @Inject constructor(
@@ -28,6 +32,8 @@ class ChatScreenViewModel @Inject constructor(
     private val getReceivedMessageUseCase: GetReceivedMessageUseCase,
     private val getNearbyDeviceByIdUseCase: GetNearbyDeviceByIdUseCase,
     private val connectDeviceUseCase: ConnectDeviceUseCase,
+    private val sharedPreferences: SharedPreferences,
+    private val chatNotificationManager: ChatNotificationManager
 ) : ViewModel() {
 
     private val TAG = "ChatScreenViewModel"
@@ -96,6 +102,17 @@ class ChatScreenViewModel @Inject constructor(
                 Log.d(TAG, "connected to Device: ${device.deviceName} : $isConnected")
             }
         }
+    }
+
+    fun setChatScreenVisibleFor(userId: String){
+        sharedPreferences.edit {
+            putString(SharedprefConstants.VISIBLE_CHAT_SCREEN_USER.name, userId)
+        }
+        chatNotificationManager.removeChatNotification(userId = userId)
+    }
+
+    fun removeChatScreeIsVisibleFor(){
+        sharedPreferences.edit { remove(SharedprefConstants.VISIBLE_CHAT_SCREEN_USER.name) }
     }
 
 }

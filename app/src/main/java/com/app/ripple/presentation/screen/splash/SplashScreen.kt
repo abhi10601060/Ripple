@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.app.ripple.R
 import com.app.ripple.presentation.navigation.garph.HomeScreenRoute
+import com.app.ripple.presentation.notification.ChatNotificationManager
 import com.app.ripple.presentation.notification.ConnectionRequestNotificationManager
 import com.app.ripple.presentation.shared.RippleLogo
 import com.app.ripple.presentation.shared.RippleTextButton
@@ -74,10 +75,7 @@ fun SplashScreen(
                 fontFamily = MontserratFamily,
                 fontWeight = FontWeight.ExtraBold,
                 modifier = Modifier.clickable{
-                    ConnectionRequestNotificationManager(context = context).showConnectionRequestNotification(
-                        deviceName = "Abhi",
-                        endpointId = "abcd"
-                    )
+//
                 }
             )
 
