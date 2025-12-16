@@ -14,6 +14,7 @@ class NearbyDeviceRealm(
     var id: String,                                                             // Android Id
     var endpointId: String,                                                     // Endpoint Id for communication
     var deviceName: String,                                                     // Users broadcasting Name
+    var model: String,                                                     // Device model
     var savedDeviceName: String? = null,                                        // Saved name by receiver
     var _connectionState: String = ConnectionState.DISCOVERED.name,
     var _visibility: String = DeviceVisibility.ONLINE.name,
@@ -29,15 +30,14 @@ class NearbyDeviceRealm(
          val visibility : DeviceVisibility
             get() = DeviceVisibility.valueOf(_visibility)
 
-    constructor() : this(id = "", endpointId = "", deviceName = "")
+    constructor() : this(id = "", endpointId = "", deviceName = "", model = "")
 }
 
-fun NearbyDeviceRealm.toNearbyDevice(): NearbyDevice{
-    return NearbyDevice(
+fun NearbyDevice.toNearbyDeviceRealm() : NearbyDeviceRealm{
+    return NearbyDeviceRealm(
         id = this.id,
         endpointId = this.endpointId,
         deviceName = this.deviceName,
-        connectionState = this.connectionState,
-        lastSeen = this.lastSeen,
+        model = this.model
     )
 }

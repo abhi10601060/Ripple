@@ -85,10 +85,11 @@ object AppModule {
         @ApplicationContext context: Context,
         nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo,
         textMessagePersistenceRepo: TextMessagePersistenceRepo,
+        sharedPreferences: SharedPreferences,
         connectionRequestNotificationManager: ConnectionRequestNotificationManager,
         chatNotificationManager: ChatNotificationManager
     ) : NearbyShareManager{
-        return NearbyShareManager.getInstance(context, nearbyDevicePersistenceRepo, textMessagePersistenceRepo, connectionRequestNotificationManager, chatNotificationManager)
+        return NearbyShareManager.getInstance(context, nearbyDevicePersistenceRepo, sharedPreferences, textMessagePersistenceRepo, connectionRequestNotificationManager, chatNotificationManager)
     }
 
     @Provides

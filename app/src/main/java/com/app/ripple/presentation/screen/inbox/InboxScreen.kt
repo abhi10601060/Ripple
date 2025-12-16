@@ -26,7 +26,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.app.ripple.data.local.realm.model.toNearbyDevice
 import com.app.ripple.data.nearby.model.toNearbyDevice
 import com.app.ripple.presentation.navigation.garph.ChatScreenRoute
 import com.app.ripple.presentation.screen.home.HomeScreenViewModel

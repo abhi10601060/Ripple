@@ -17,7 +17,7 @@ class SplashViewModel @Inject constructor(
     }
 
     fun saveUserName(userName: String) {
-        sharedPreferences.edit {
+        sharedPreferences.edit(commit = true) {
             putString(SharedprefConstants.USER_NAME.name, userName)
         }
     }

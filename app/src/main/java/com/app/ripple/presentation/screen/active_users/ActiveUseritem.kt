@@ -66,7 +66,7 @@ fun ActiveUserItem(
             )
 
             Text(
-                text = "~${nearbyDevice.endpointId}",
+                text = "~${nearbyDevice.model}",
                 color = Color.Gray,
                 fontFamily = CourierPrimeFamily,
                 fontSize = 15.sp

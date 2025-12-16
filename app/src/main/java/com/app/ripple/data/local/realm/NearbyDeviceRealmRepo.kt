@@ -3,10 +3,10 @@ package com.app.ripple.data.local.realm
 import android.util.Log
 import com.app.ripple.data.local.contract.NearbyDevicePersistenceRepo
 import com.app.ripple.data.local.realm.model.NearbyDeviceRealm
+import com.app.ripple.data.local.realm.model.toNearbyDeviceRealm
 import com.app.ripple.data.nearby.model.ConnectionState
 import com.app.ripple.data.nearby.model.DeviceVisibility
 import com.app.ripple.data.nearby.model.NearbyDevice
-import com.app.ripple.data.nearby.model.toNearbyDeviceRealm
 import io.realm.kotlin.Realm
 import io.realm.kotlin.ext.query
 import kotlinx.coroutines.flow.Flow

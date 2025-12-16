@@ -12,6 +12,7 @@ data class NearbyDeviceDomain(
     val id: String,                                                             // Android Id
     val endpointId: String,                                                     // Endpoint Id for communication
     val deviceName: String,                                                     // Users broadcasting Name
+    val model: String,                                                          // Device model
     val savedDeviceName: String? = null,                                        // Saved name by receiver
     val connectionState: ConnectionState = ConnectionState.DISCOVERED,
     val visibility: DeviceVisibility = DeviceVisibility.ONLINE,
@@ -25,6 +26,7 @@ data class NearbyDeviceDomain(
             id = "123",
             endpointId = "abc",
             deviceName = "abcdefghijk",
+            model = "xyz",
             connectionState = ConnectionState.CONNECTED,
             lastSeen = System.currentTimeMillis(),
             signalStrength = 100,
@@ -41,6 +43,7 @@ fun NearbyDeviceRealm.toNearbyDeviceDomain() : NearbyDeviceDomain{
         id = this.id,
         endpointId = this.endpointId,
         deviceName = this.deviceName,
+        model= this.model,
         savedDeviceName = this.deviceName,
         connectionState = this.connectionState,
         visibility = this.visibility,
@@ -56,6 +59,7 @@ fun NearbyDevice.toNearbyDeviceDomain(): NearbyDeviceDomain{
         id = this.id,
         endpointId = this.endpointId,
         deviceName = this.deviceName,
+        model = this.model,
         connectionState = this.connectionState,
         lastSeen = this.lastSeen,
         signalStrength =  this.signalStrength

@@ -2,11 +2,13 @@ package com.app.ripple.data.nearby
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.provider.Settings
 import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
 import com.app.ripple.data.local.contract.NearbyDevicePersistenceRepo
 import com.app.ripple.data.local.contract.TextMessagePersistenceRepo
+import com.app.ripple.data.local.sharedpreferences.SharedprefConstants
 import com.app.ripple.data.nearby.dto.TextMessageDto
 import com.app.ripple.data.nearby.dto.toTextMessageDto
 import com.app.ripple.data.nearby.model.ClusterInfo
@@ -51,6 +53,7 @@ import kotlin.coroutines.resumeWithException
 class NearbyShareManager private constructor(
     private val context: Context,
     private val nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo,
+    private val sharedPreferences: SharedPreferences,
     private val textMessagePersistenceRepo: TextMessagePersistenceRepo,
     private val connectionRequestNotificationManager: ConnectionRequestNotificationManager,
     private val chatNotificationManager: ChatNotificationManager
@@ -67,6 +70,7 @@ class NearbyShareManager private constructor(
 
         fun getInstance(context: Context,
                         nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo,
+                        sharedPreferences: SharedPreferences,
                         textMessagePersistenceRepo: TextMessagePersistenceRepo,
                         connectionRequestNotificationManager: ConnectionRequestNotificationManager,
                         chatNotificationManager: ChatNotificationManager
@@ -75,9 +79,10 @@ class NearbyShareManager private constructor(
                 INSTANCE ?: NearbyShareManager(
                     context.applicationContext,
                     nearbyDevicePersistenceRepo,
+                    sharedPreferences,
                     textMessagePersistenceRepo,
                     connectionRequestNotificationManager,
-                    chatNotificationManager
+                    chatNotificationManager,
                 ).also { INSTANCE = it }
             }
         }
@@ -105,7 +110,7 @@ class NearbyShareManager private constructor(
 
     @SuppressLint("HardwareIds")
     private val androidId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
-    private val deviceName = "${android.os.Build.MODEL}:${androidId}"
+    private val deviceModel = android.os.Build.MODEL
     private val serviceId = "com.app.ripple"
 
     // Connection lifecycle callbacks
@@ -168,9 +173,10 @@ class NearbyShareManager private constructor(
         override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
             Log.d("NearbyShare", "Endpoint found: ${info.endpointName}")
             val device = NearbyDevice(
-                id = info.endpointName.split(":")[1],
+                id = info.endpointName.split(":")[2],
                 endpointId = endpointId,
                 deviceName = info.endpointName.split(":")[0],
+                model = info.endpointName.split(":")[1],
                 connectionState = ConnectionState.DISCOVERED
             )
 
@@ -263,8 +269,15 @@ class NearbyShareManager private constructor(
         this.iRejected = true
     }
 
+    fun getDeviceName(): String {
+        val savedUserName = sharedPreferences.getString(SharedprefConstants.USER_NAME.name, "")
+        return "${savedUserName}:${android.os.Build.MODEL}:${androidId}"
+    }
+
     // Public API Methods
     fun startAdvertising(): Flow<Boolean> = flow {
+        val deviceName = getDeviceName()
+
         val options = AdvertisingOptions.Builder()
             .setStrategy(Strategy.P2P_CLUSTER)
             .build()
@@ -326,7 +339,7 @@ class NearbyShareManager private constructor(
         updateDeviceConnectionState(deviceId, ConnectionState.CONNECTING)
         try {
             val result = connectionsClient.requestConnection(
-                deviceName,
+                getDeviceName(),
                 deviceId,
                 connectionLifecycleCallback
             ).await()
@@ -376,7 +389,7 @@ class NearbyShareManager private constructor(
         val clusterId = java.util.UUID.randomUUID().toString()
         val cluster = ClusterInfo(
             clusterId = clusterId,
-            devices = listOf(NearbyDevice("123",deviceName, deviceName, ConnectionState.CONNECTED)),
+            devices = listOf(NearbyDevice("123",getDeviceName(), getDeviceName(),"xyzModel", ConnectionState.CONNECTED)),
             isActive = true
         )
         _clusterInfo.value = cluster
