@@ -23,7 +23,7 @@ fun NavGraphBuilder.mainGraph(navController: NavController){
         startDestination = SplashScreenRoute
     ){
         composable<SplashScreenRoute> {
-            SplashScreen(navController = navController)
+            SplashScreen(navController = navController, splashViewModel = hiltViewModel())
         }
 
         composable<HomeScreenRoute> {
