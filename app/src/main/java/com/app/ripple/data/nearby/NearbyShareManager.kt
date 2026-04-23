@@ -60,7 +60,6 @@ class NearbyShareManager private constructor(
 ) {
 
     private val TAG = "NearbyShareManager"
-    private val connectionPool = mutableStateMapOf<String, String>()
     private var iRejected = false
 
     companion object {
@@ -467,17 +466,6 @@ class NearbyShareManager private constructor(
     }
 
     private fun addReceivedMessage(message: TextMessage) {
-//        GlobalScope.launch {
-//            val returnMessage = TextMessage(
-//                content = "Message received",
-//                senderId = deviceName,
-//                receiverId = message.senderId,
-//                deliveryStatus = DeliveryStatus.DELIVERED
-//            )
-//            sendTextMessage(returnMessage).collect {
-//                if (it) Log.d("NearbyShare", "Message sent successfully")
-//            }
-//        }
         _receivedMessages.value = _receivedMessages.value + message
     }
 
