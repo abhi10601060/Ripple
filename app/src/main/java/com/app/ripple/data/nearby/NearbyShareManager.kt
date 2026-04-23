@@ -246,7 +246,7 @@ class NearbyShareManager private constructor(
                     Log.d("NearbyShare", "Payload transfer failed")
 
                     GlobalScope.launch(Dispatchers.IO) {
-                        textMessagePersistenceRepo.updateDeliveryStatus(update.payloadId, DeliveryStatus.DELIVERED)
+                        textMessagePersistenceRepo.updateDeliveryStatus(update.payloadId, DeliveryStatus.FAILED)
                     }
 
                     updateMessageDeliveryStatus(endpointId, DeliveryStatus.FAILED)
@@ -350,7 +350,6 @@ class NearbyShareManager private constructor(
             Log.d(TAG, "connectToDevice: Error : ${e.message}")
             emit(false)
         }
-
     }
 
     fun disconnectFromDevice(deviceId: String): Flow<Boolean> = flow {
