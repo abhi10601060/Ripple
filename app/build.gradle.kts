@@ -2,10 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    kotlin("plugin.serialization") version "2.0.21"
-//    id("kotlin-kapt")
-    id("com.google.devtools.ksp")
-    id("com.google.dagger.hilt.android")
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
     id("io.realm.kotlin") version "2.0.0"
 }
 
@@ -63,17 +62,17 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation("androidx.compose.runtime:runtime-livedata:$2.9.1")
+    implementation("androidx.compose.runtime:runtime-livedata:1.7.2")
 
     //icons
-    implementation(("androidx.compose.material:material-icons-extended:1.7.8"))
+    implementation("androidx.compose.material:material-icons-extended:1.7.2")
 
     //Gson
     implementation(libs.gson)
 
     //ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:$2.9.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
 
     //Coil
     implementation(libs.coil.compose)
@@ -84,14 +83,13 @@ dependencies {
     //Type Safe navigation
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.serialization.json.v160)
 
     //Dagger Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
-    implementation("androidx.hilt:hilt-work:1.0.0")
-    ksp("androidx.hilt:hilt-compiler:1.0.0")
+    implementation(libs.hilt.work)
+    ksp(libs.hilt.compiler)
 
 
     // Google Font
