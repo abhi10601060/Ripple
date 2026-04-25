@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBackIosNew
+import androidx.compose.material.icons.rounded.AttachFile
 import androidx.compose.material.icons.rounded.Send
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -137,10 +138,6 @@ fun ChatScreen(
                     TextMessageItem(textMessage = message, isFromCurrentUser = message.senderId != receiverDeviceDomain?.id)
                 }
             }
-
-//            Spacer(
-//                modifier = Modifier.height(80.dp)
-//            )
         }
 
         // MARK: Bottom Floating Message Box
@@ -161,36 +158,54 @@ fun ChatScreen(
                 }
             }
             else if(receiverDeviceDomain?.connectionState == ConnectionState.CONNECTED){
-                RippleTextField(
-                    value = typedMessage,
-                    onValueChange = {
-                        typedMessage = it
-                    },
-                    placeholder = "Type a message..."
-                )
-
-                Ripple(
-                    modifier = Modifier
-                        .padding(end = 6.dp)
-                        .align(Alignment.CenterEnd)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = ripple(),
-                            onClick = {
-                                viewModel.sendTextMessage(typedMessage)
-                                typedMessage = ""
-                            }
-                        ),
-                    size= 40.dp
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+
                     Icon(
-                        modifier = Modifier
-                            .size(10.dp),
-                        imageVector = Icons.Rounded.Send,
-                        contentDescription = "Send Button",
-                        tint = Color.Black
+                        modifier = Modifier.padding(end = 3.dp).size(30.dp),
+                        imageVector = Icons.Rounded.AttachFile,
+                        contentDescription = "Send Files",
+                        tint = Color.Gray
                     )
+
+                    Box(
+                        modifier = Modifier.fillMaxWidth().weight(1f)
+                    ){
+                        RippleTextField(
+                            value = typedMessage,
+                            onValueChange = {
+                                typedMessage = it
+                            },
+                            placeholder = "Type a message..."
+                        )
+
+                        Ripple(
+                            modifier = Modifier
+                                .padding(end = 6.dp)
+                                .align(Alignment.CenterEnd)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = ripple(),
+                                    onClick = {
+                                        viewModel.sendTextMessage(typedMessage)
+                                        typedMessage = ""
+                                    }
+                                ),
+                            size= 40.dp
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(10.dp),
+                                imageVector = Icons.Rounded.Send,
+                                contentDescription = "Send Button",
+                                tint = Color.Black
+                            )
+                        }
+                    }
                 }
+
             }
             else{
                 Box(
@@ -253,7 +268,50 @@ fun ChatScreenHeader(
 @Preview
 @Composable
 private fun ChatScreenPrev() {
-//    ChatScreen(
-//        receiverDevice = NearbyDevice.mock
-//    )
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Icon(
+            modifier = Modifier.padding(end = 3.dp).size(30.dp),
+            imageVector = Icons.Rounded.AttachFile,
+            contentDescription = "Send Files",
+            tint = Color.Gray
+        )
+
+
+        Box(
+            modifier = Modifier.fillMaxWidth().weight(1f)
+        ){
+            RippleTextField(
+                value = "enter the message here...",
+                onValueChange = {},
+                placeholder = "Type a message..."
+            )
+
+            Ripple(
+                modifier = Modifier
+                    .padding(end = 6.dp)
+                    .align(Alignment.CenterEnd)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = ripple(),
+                        onClick = {
+
+                        }
+                    ),
+                size= 40.dp
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .size(10.dp),
+                    imageVector = Icons.Rounded.Send,
+                    contentDescription = "Send Button",
+                    tint = Color.Black
+                )
+            }
+        }
+    }
 }
