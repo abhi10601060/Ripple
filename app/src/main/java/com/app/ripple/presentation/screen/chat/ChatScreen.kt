@@ -1,5 +1,8 @@
 package com.app.ripple.presentation.screen.chat
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,11 +22,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.InsertDriveFile
 import androidx.compose.material.icons.rounded.ArrowBackIosNew
 import androidx.compose.material.icons.rounded.AttachFile
+import androidx.compose.material.icons.rounded.PhotoLibrary
 import androidx.compose.material.icons.rounded.Send
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +61,7 @@ import com.app.ripple.presentation.ui.theme.DarkBG
 import com.app.ripple.presentation.ui.theme.MontserratFamily
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
     modifier: Modifier = Modifier,
@@ -114,6 +124,28 @@ fun ChatScreen(
         mutableStateOf("")
     }
 
+    var showAttachmentOptions by remember {
+        mutableStateOf(false)
+    }
+
+    val sheetState = rememberModalBottomSheetState()
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let {
+            // TODO: viewModel.sendFile(it)
+        }
+    }
+
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            // TODO: viewModel.sendFile(it)
+        }
+    }
+
     Box(
         modifier = modifier.fillMaxSize()
             .background(color = DarkBG)
@@ -164,11 +196,20 @@ fun ChatScreen(
                 ) {
 
                     Icon(
-                        modifier = Modifier.padding(end = 3.dp).size(30.dp),
-                        imageVector = Icons.Rounded.AttachFile,
-                        contentDescription = "Send Files",
-                        tint = Color.Gray
-                    )
+                        modifier = Modifier
+                            .padding(end = 3.dp)
+                            .size(30.dp)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = ripple(bounded = false),
+                                onClick = {
+                            showAttachmentOptions = true
+                        }
+                    ),
+                imageVector = Icons.Rounded.AttachFile,
+                contentDescription = "Send Files",
+                tint = Color.Gray
+            )
 
                     Box(
                         modifier = Modifier.fillMaxWidth().weight(1f)
@@ -223,6 +264,77 @@ fun ChatScreen(
                 }
             }
 
+        }
+
+        if (showAttachmentOptions) {
+            ModalBottomSheet(
+                onDismissRequest = { showAttachmentOptions = false },
+                sheetState = sheetState,
+                containerColor = DarkBG
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 32.dp, start = 16.dp, end = 16.dp, top = 8.dp)
+                ) {
+                    Text(
+                        text = "Attach",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontFamily = MontserratFamily,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 20.dp)
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
+                                showAttachmentOptions = false
+                            }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.PhotoLibrary,
+                            contentDescription = "Gallery",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = "Gallery (Images & Videos)",
+                            color = Color.White,
+                            fontFamily = CourierPrimeFamily
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                filePickerLauncher.launch("*/*")
+                                showAttachmentOptions = false
+                            }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.InsertDriveFile,
+                            contentDescription = "Files",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = "Files & Documents",
+                            color = Color.White,
+                            fontFamily = CourierPrimeFamily
+                        )
+                    }
+                }
+            }
         }
     }
 }
