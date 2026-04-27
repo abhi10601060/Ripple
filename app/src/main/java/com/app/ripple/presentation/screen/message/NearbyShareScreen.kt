@@ -26,7 +26,7 @@ import com.app.ripple.data.nearby.model.ClusterInfo
 import com.app.ripple.data.nearby.model.ConnectionState
 import com.app.ripple.data.nearby.model.DeliveryStatus
 import com.app.ripple.data.nearby.model.NearbyDevice
-import com.app.ripple.data.nearby.model.TextMessage
+import com.app.ripple.data.nearby.model.Message
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -442,7 +442,7 @@ fun ConnectedDevicesSection(
 }
 
 @Composable
-fun MessagesSection(messages: List<TextMessage>) {
+fun MessagesSection(messages: List<Message>) {
     if (messages.isEmpty()) {
         EmptyStateMessage(
             icon = Icons.Default.Message,
@@ -610,7 +610,7 @@ fun ConnectedDeviceCard(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MessageCard(message: TextMessage) {
+fun MessageCard(message: Message) {
     val isOutgoing = message.senderId == android.os.Build.MODEL
 
     Card(

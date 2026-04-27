@@ -7,7 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.ripple.data.nearby.model.ClusterInfo
 import com.app.ripple.data.nearby.model.NearbyDevice
-import com.app.ripple.data.nearby.model.TextMessage
+import com.app.ripple.data.nearby.model.Message
+import com.app.ripple.data.nearby.model.MessageType
 import com.app.ripple.domain.repo.NearbyShareRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.catch
@@ -29,8 +30,8 @@ class NearbyShareViewModel @Inject constructor(
     private val _connectedDevices = MutableLiveData<List<NearbyDevice>>()
     val connectedDevices: LiveData<List<NearbyDevice>> = _connectedDevices
 
-    private val _messages = MutableLiveData<List<TextMessage>>()
-    val messages: LiveData<List<TextMessage>> = _messages
+    private val _messages = MutableLiveData<List<Message>>()
+    val messages: LiveData<List<Message>> = _messages
 
     private val _clusterInfo = MutableLiveData<ClusterInfo>()
     val clusterInfo: LiveData<ClusterInfo> = _clusterInfo
@@ -160,10 +161,11 @@ class NearbyShareViewModel @Inject constructor(
 
     fun sendMessage(content: String, receiverId: String) {
         viewModelScope.launch {
-            val message = TextMessage(
+            val message = Message(
                 content = content,
                 senderId = android.os.Build.MODEL,
-                receiverId = receiverId
+                receiverId = receiverId,
+                messageType = MessageType.TEXT
             )
 
             repository.sendTextMessage(message)

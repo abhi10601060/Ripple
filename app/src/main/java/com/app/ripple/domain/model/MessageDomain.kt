@@ -1,34 +1,37 @@
 package com.app.ripple.domain.model
 
-import com.app.ripple.data.local.realm.model.NearbyDeviceRealm
-import com.app.ripple.data.local.realm.model.TextMessageRealm
+import com.app.ripple.data.local.realm.model.MessageRealm
 import com.app.ripple.data.nearby.model.DeliveryStatus
+import com.app.ripple.data.nearby.model.MessageType
 
-data class TextMessageDomain(
+data class MessageDomain(
     val id : Long = System.currentTimeMillis(),
     val content: String,
     val senderId: String,
     val receiverId: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val deliveryStatus: DeliveryStatus = DeliveryStatus.FAILED
+    val deliveryStatus: DeliveryStatus = DeliveryStatus.FAILED,
+    val messageType: MessageType
 ){
     companion object{
-        val mock = TextMessageDomain(
+        val mock = MessageDomain(
             content = "Hello How are you?",
             senderId = "123",
             receiverId = "abc",
-            timestamp = System.currentTimeMillis()
+            timestamp = System.currentTimeMillis(),
+            messageType = MessageType.TEXT
         )
     }
 }
 
-fun TextMessageRealm.toTextMessageDomain(): TextMessageDomain{
-    return TextMessageDomain(
+fun MessageRealm.toTextMessageDomain(): MessageDomain{
+    return MessageDomain(
         id = this.id,
         content = this.content,
         senderId = this.senderId,
         receiverId = this.receiverId,
         timestamp = this.timestamp,
-        deliveryStatus = this.deliveryStatus
+        deliveryStatus = this.deliveryStatus,
+        messageType = this.messageType
     )
 }

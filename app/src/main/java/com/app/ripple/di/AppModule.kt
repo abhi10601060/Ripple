@@ -9,7 +9,7 @@ import com.app.ripple.data.local.contract.TextMessagePersistenceRepo
 import com.app.ripple.data.local.realm.NearbyDeviceRealmRepo
 import com.app.ripple.data.local.realm.TextMessageRealmRepo
 import com.app.ripple.data.local.realm.model.NearbyDeviceRealm
-import com.app.ripple.data.local.realm.model.TextMessageRealm
+import com.app.ripple.data.local.realm.model.MessageRealm
 import com.app.ripple.data.nearby.NearbyShareManager
 import com.app.ripple.data.repo.NearbyDeviceRepoImpl
 import com.app.ripple.data.repo.NearbyShareRepoImpl
@@ -42,7 +42,7 @@ object AppModule {
             configuration = RealmConfiguration.create(
                 schema = setOf(
                     NearbyDeviceRealm::class,
-                    TextMessageRealm::class
+                    MessageRealm::class
                 )
             )
         )

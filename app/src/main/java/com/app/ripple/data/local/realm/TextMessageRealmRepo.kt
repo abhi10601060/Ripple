@@ -2,12 +2,12 @@ package com.app.ripple.data.local.realm
 
 import com.app.ripple.data.local.contract.TextMessagePersistenceRepo
 import com.app.ripple.data.local.realm.model.NearbyDeviceRealm
-import com.app.ripple.data.local.realm.model.TextMessageRealm
+import com.app.ripple.data.local.realm.model.MessageRealm
 import com.app.ripple.data.nearby.model.DeliveryStatus
 import io.realm.kotlin.Realm
 
 class TextMessageRealmRepo(private val realm: Realm): TextMessagePersistenceRepo {
-    override suspend fun insertSentMessage(message: TextMessageRealm) {
+    override suspend fun insertSentMessage(message: MessageRealm) {
         realm.write {
             val receiverNearbyDevice = query(NearbyDeviceRealm::class, "id == $0", message.receiverId).first().find()
             receiverNearbyDevice?.apply {
@@ -17,7 +17,7 @@ class TextMessageRealmRepo(private val realm: Realm): TextMessagePersistenceRepo
         }
     }
 
-    override suspend fun insertReceivedMessage(message: TextMessageRealm) {
+    override suspend fun insertReceivedMessage(message: MessageRealm) {
         realm.write {
             val senderDevice = query(NearbyDeviceRealm::class, "id == $0", message.senderId).first().find()
             senderDevice?.apply {
@@ -33,7 +33,7 @@ class TextMessageRealmRepo(private val realm: Realm): TextMessagePersistenceRepo
     ) {
 
         realm.write {
-            val savedMessage = query(TextMessageRealm::class, "id == $0", id).first().find()
+            val savedMessage = query(MessageRealm::class, "id == $0", id).first().find()
 
             savedMessage?.apply {
                 this._deliveryStatus = status.name

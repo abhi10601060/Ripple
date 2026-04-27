@@ -16,8 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.app.ripple.data.nearby.model.TextMessage
-import com.app.ripple.domain.model.TextMessageDomain
+import com.app.ripple.domain.model.MessageDomain
 import com.app.ripple.presentation.shared.CircularImage
 import com.app.ripple.presentation.ui.theme.CourierPrimeFamily
 import com.app.ripple.presentation.ui.theme.DarkBG
@@ -26,7 +25,7 @@ import com.app.ripple.presentation.ui.theme.SecondaryDarkBG
 @Composable
 fun TextMessageItem(
     modifier: Modifier = Modifier,
-    textMessage: TextMessageDomain,
+    textMessage: MessageDomain,
     isFromCurrentUser: Boolean = false,
 ) {
     Row(

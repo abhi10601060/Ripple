@@ -116,8 +116,6 @@ fun ChatScreen(
 
     LaunchedEffect(key1 = true) {
         viewModel.init(receiverDevice = receiverDevice, context = context)
-        viewModel.observeSentMessage()
-        viewModel.observeReceivedMessage()
     }
 
     var typedMessage by remember {
@@ -314,7 +312,7 @@ fun ChatScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                filePickerLauncher.launch("*/*")
+                                  filePickerLauncher.launch("*/*")
                                 showAttachmentOptions = false
                             }
                             .padding(vertical = 12.dp),

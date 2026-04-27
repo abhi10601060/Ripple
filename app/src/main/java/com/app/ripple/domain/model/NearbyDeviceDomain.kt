@@ -1,12 +1,9 @@
 package com.app.ripple.domain.model
 
 import com.app.ripple.data.local.realm.model.NearbyDeviceRealm
-import com.app.ripple.data.local.realm.model.TextMessageRealm
 import com.app.ripple.data.nearby.model.ConnectionState
 import com.app.ripple.data.nearby.model.DeviceVisibility
 import com.app.ripple.data.nearby.model.NearbyDevice
-import io.realm.kotlin.ext.realmListOf
-import io.realm.kotlin.types.RealmList
 
 data class NearbyDeviceDomain(
     val id: String,                                                             // Android Id
@@ -18,8 +15,8 @@ data class NearbyDeviceDomain(
     val visibility: DeviceVisibility = DeviceVisibility.ONLINE,
     val lastSeen: Long = System.currentTimeMillis(),
     val signalStrength: Int = 100,
-    val recentMessage: TextMessageDomain? = null,
-    val allMessages : List<TextMessageDomain> = listOf()
+    val recentMessage: MessageDomain? = null,
+    val allMessages : List<MessageDomain> = listOf()
 ){
     companion object{
         val mock = NearbyDeviceDomain(
@@ -31,8 +28,8 @@ data class NearbyDeviceDomain(
             lastSeen = System.currentTimeMillis(),
             signalStrength = 100,
             visibility = DeviceVisibility.ONLINE,
-            recentMessage= TextMessageDomain.mock,
-            allMessages = listOf(TextMessageDomain.mock, TextMessageDomain.mock)
+            recentMessage= MessageDomain.mock,
+            allMessages = listOf(MessageDomain.mock, MessageDomain.mock)
         )
     }
 }

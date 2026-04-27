@@ -3,7 +3,6 @@ package com.app.ripple.data.local.realm.model
 import com.app.ripple.data.nearby.model.ConnectionState
 import com.app.ripple.data.nearby.model.DeviceVisibility
 import com.app.ripple.data.nearby.model.NearbyDevice
-import com.app.ripple.data.nearby.model.TextMessage
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
@@ -20,8 +19,8 @@ class NearbyDeviceRealm(
     var _visibility: String = DeviceVisibility.ONLINE.name,
     var lastSeen: Long = System.currentTimeMillis(),
     var signalStength: Int = 100,
-    var recentMessage: TextMessageRealm? = null,
-    var allMessages : RealmList<TextMessageRealm> = realmListOf()
+    var recentMessage: MessageRealm? = null,
+    var allMessages : RealmList<MessageRealm> = realmListOf()
     ): RealmObject {
 
          val connectionState : ConnectionState

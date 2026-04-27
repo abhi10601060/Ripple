@@ -5,17 +5,16 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.provider.Settings
 import android.util.Log
-import androidx.compose.runtime.mutableStateMapOf
 import com.app.ripple.data.local.contract.NearbyDevicePersistenceRepo
 import com.app.ripple.data.local.contract.TextMessagePersistenceRepo
 import com.app.ripple.data.local.sharedpreferences.SharedprefConstants
-import com.app.ripple.data.nearby.dto.TextMessageDto
+import com.app.ripple.data.nearby.dto.MessageDto
 import com.app.ripple.data.nearby.dto.toTextMessageDto
 import com.app.ripple.data.nearby.model.ClusterInfo
 import com.app.ripple.data.nearby.model.ConnectionState
 import com.app.ripple.data.nearby.model.DeliveryStatus
 import com.app.ripple.data.nearby.model.NearbyDevice
-import com.app.ripple.data.nearby.model.TextMessage
+import com.app.ripple.data.nearby.model.Message
 import com.app.ripple.data.nearby.model.toTextMessageRealm
 import com.app.ripple.presentation.notification.ChatNotificationManager
 import com.app.ripple.presentation.notification.ConnectionRequestNotificationManager
@@ -38,7 +37,6 @@ import com.google.gson.Gson
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,7 +45,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import javax.inject.Inject
 import kotlin.coroutines.resumeWithException
 
 class NearbyShareManager private constructor(
@@ -89,8 +86,8 @@ class NearbyShareManager private constructor(
 
     private val _discoveredDevices = MutableStateFlow<List<NearbyDevice>>(emptyList())
     private val _connectedDevices = MutableStateFlow<List<NearbyDevice>>(emptyList())
-    private val _receivedMessages = MutableStateFlow<List<TextMessage>>(emptyList())
-    private val _sentMessages = MutableStateFlow<List<TextMessage>>(emptyList())
+    private val _receivedMessages = MutableStateFlow<List<Message>>(emptyList())
+    private val _sentMessages = MutableStateFlow<List<Message>>(emptyList())
     private val _clusterInfo = MutableStateFlow<ClusterInfo?>(null)
     private val _advertisingState = MutableStateFlow(false)
     private val _discoveryState = MutableStateFlow(false)
@@ -98,8 +95,8 @@ class NearbyShareManager private constructor(
     // State accessors
     val discoveredDevices: StateFlow<List<NearbyDevice>> = _discoveredDevices.asStateFlow()
     val connectedDevices: StateFlow<List<NearbyDevice>> = _connectedDevices.asStateFlow()
-    val receivedMessages: StateFlow<List<TextMessage>> = _receivedMessages.asStateFlow()
-    val sentMessages: StateFlow<List<TextMessage>> = _sentMessages.asStateFlow()
+    val receivedMessages: StateFlow<List<Message>> = _receivedMessages.asStateFlow()
+    val sentMessages: StateFlow<List<Message>> = _sentMessages.asStateFlow()
     val clusterInfo: StateFlow<ClusterInfo?> = _clusterInfo.asStateFlow()
     val isAdvertising: StateFlow<Boolean> = _advertisingState.asStateFlow()
     val isDiscovering: StateFlow<Boolean> = _discoveryState.asStateFlow()
@@ -200,12 +197,13 @@ class NearbyShareManager private constructor(
             if (payload.type == Payload.Type.BYTES) {
                 val serialisedMessage = String(payload.asBytes()!!, Charsets.UTF_8)
                 Log.d(TAG, "onPayloadReceived: $serialisedMessage")
-                val receivedMessage = Gson().fromJson(serialisedMessage, TextMessageDto::class.java)
-                val message = TextMessage(
+                val receivedMessage = Gson().fromJson(serialisedMessage, MessageDto::class.java)
+                val message = Message(
                     content = receivedMessage.content,
                     senderId = receivedMessage.senderId,
                     receiverId = receivedMessage.receiverId,
-                    deliveryStatus = DeliveryStatus.DELIVERED
+                    deliveryStatus = DeliveryStatus.DELIVERED,
+                    messageType = receivedMessage.messageType
                 )
 
                 GlobalScope.launch(Dispatchers.IO) {
@@ -361,7 +359,7 @@ class NearbyShareManager private constructor(
         connectionsClient.stopAllEndpoints()
     }
 
-    fun sendTextMessage(message: TextMessage): Flow<Boolean> = flow {
+    fun sendTextMessage(message: Message): Flow<Boolean> = flow {
         val serialisedMessage = Gson().toJson(message.toTextMessageDto())
         Log.d(TAG, "sendTextMessage: $serialisedMessage")
         val payload = Payload.fromBytes(serialisedMessage.toByteArray(Charsets.UTF_8))
@@ -465,11 +463,11 @@ class NearbyShareManager private constructor(
         }
     }
 
-    private fun addReceivedMessage(message: TextMessage) {
+    private fun addReceivedMessage(message: Message) {
         _receivedMessages.value = _receivedMessages.value + message
     }
 
-    private fun addSentMessage(message: TextMessage) {
+    private fun addSentMessage(message: Message) {
         _sentMessages.value = _sentMessages.value + message
     }
 

@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.ripple.data.local.sharedpreferences.SharedprefConstants
 import com.app.ripple.data.nearby.model.NearbyDevice
-import com.app.ripple.data.nearby.model.TextMessage
+import com.app.ripple.data.nearby.model.Message
 import com.app.ripple.domain.model.NearbyDeviceDomain
 import com.app.ripple.domain.use_case.chat.GetReceivedMessageUseCase
 import com.app.ripple.domain.use_case.chat.GetSentMessageUseCase
@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import androidx.core.content.edit
+import com.app.ripple.data.nearby.model.MessageType
 import com.app.ripple.presentation.notification.ChatNotificationManager
 
 @HiltViewModel
@@ -44,12 +45,6 @@ class ChatScreenViewModel @Inject constructor(
     private val _receiverDeviceDomain = mutableStateOf<NearbyDeviceDomain?>(null)
     val receiverDeviceDomain: State<NearbyDeviceDomain?> = _receiverDeviceDomain
 
-    private val _sentMessages = mutableStateOf(listOf<TextMessage>())
-    val sentMessages: State<List<TextMessage>> = _sentMessages
-
-    private val _receivedMessages = mutableStateOf(listOf<TextMessage>())
-    val receivedMessages: State<List<TextMessage>> = _receivedMessages
-
     @SuppressLint("HardwareIds")
     fun init(receiverDevice: NearbyDevice, context: Context) {
         this.receiverDevice = receiverDevice
@@ -59,31 +54,16 @@ class ChatScreenViewModel @Inject constructor(
     fun sendTextMessage(payload: String){
         if (payload.isEmpty()) return
 
-        val textMessage = TextMessage(
+        val textMessage = Message(
             endpointId = receiverDevice.endpointId,
             senderId = androidId,
             receiverId = receiverDeviceDomain.value?.id.toString(),
-            content = payload
+            content = payload,
+            messageType = MessageType.TEXT
         )
         viewModelScope.launch(Dispatchers.IO) {
             sendTextMessageUseCase.invoke(textMessage = textMessage).collect { sentSuccessfully ->
                 Log.d(TAG, "sendTextMessage: message sent successfully : $sentSuccessfully")
-            }
-        }
-    }
-
-    fun observeSentMessage(){
-        viewModelScope.launch(Dispatchers.IO) {
-            getSentMessageUseCase.invoke().collect { textMessages ->
-                _sentMessages.value = textMessages
-            }
-        }
-    }
-
-    fun observeReceivedMessage(){
-        viewModelScope.launch(Dispatchers.IO) {
-            getReceivedMessageUseCase.invoke().collect { textMessages ->
-                _receivedMessages.value = textMessages
             }
         }
     }
