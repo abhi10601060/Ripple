@@ -17,6 +17,7 @@ import com.app.ripple.domain.repo.NearbyDeviceRepo
 import com.app.ripple.domain.repo.NearbyShareRepo
 import com.app.ripple.presentation.notification.ChatNotificationManager
 import com.app.ripple.presentation.notification.ConnectionRequestNotificationManager
+import com.app.ripple.util.UriHelper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -114,6 +115,12 @@ object AppModule {
     @Singleton
     fun providesComprehensiveCleanupManager(nearbyDevicePersistenceRepo: NearbyDevicePersistenceRepo, nearbyShareManager: NearbyShareManager) : ComprehensiveCleanupManager{
         return ComprehensiveCleanupManager(nearbyDevicePersistenceRepo, nearbyShareManager)
+    }
+
+    @Provides
+    @Singleton
+    fun providesUriHelper(@ApplicationContext context: Context) : UriHelper{
+        return UriHelper(context)
     }
 }
 

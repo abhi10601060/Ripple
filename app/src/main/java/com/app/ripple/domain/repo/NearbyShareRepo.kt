@@ -15,6 +15,7 @@ interface NearbyShareRepo {
     fun connectToDevice(deviceId: String): Flow<Boolean>
     fun disconnectFromDevice(deviceId: String): Flow<Boolean>
     fun sendTextMessage(message: Message): Flow<Boolean>
+    fun sendFile(metadataMessage: Message): Flow<Boolean>
     fun getReceivedMessages(): Flow<List<Message>>
     fun getSentMessages(): Flow<List<Message>>
     fun getClusterInfo(): Flow<ClusterInfo>

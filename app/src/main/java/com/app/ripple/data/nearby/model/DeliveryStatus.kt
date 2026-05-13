@@ -4,5 +4,7 @@ enum class DeliveryStatus {
     PENDING,
     SENT,
     DELIVERED,
-    FAILED
+    FAILED,
+    CANCELLED,
+    PROCESSING
 }

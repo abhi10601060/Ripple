@@ -11,15 +11,31 @@ data class MessageDomain(
     val receiverId: String,
     val timestamp: Long = System.currentTimeMillis(),
     val deliveryStatus: DeliveryStatus = DeliveryStatus.FAILED,
-    val messageType: MessageType
+    val messageType: MessageType,
+    val payloadSize: Float = 0f,
+    val fileName: String = "",
+    val mimeType: String = "",
+    val progress: Float = 0f
 ){
     companion object{
-        val mock = MessageDomain(
+        val mockTextMessage = MessageDomain(
             content = "Hello How are you?",
             senderId = "123",
             receiverId = "abc",
             timestamp = System.currentTimeMillis(),
             messageType = MessageType.TEXT
+        )
+
+        val mockFileMetadataMessage = MessageDomain(
+            content = "Hello How are you?",
+            senderId = "123",
+            receiverId = "abc",
+            timestamp = System.currentTimeMillis(),
+            messageType = MessageType.METADATA,
+            fileName = "test.png",
+            mimeType = ".png",
+            payloadSize = 2345f,
+            progress = 1f
         )
     }
 }
@@ -32,6 +48,10 @@ fun MessageRealm.toTextMessageDomain(): MessageDomain{
         receiverId = this.receiverId,
         timestamp = this.timestamp,
         deliveryStatus = this.deliveryStatus,
-        messageType = this.messageType
+        messageType = this.messageType,
+        payloadSize = this.payloadSize,
+        fileName = this.fileName,
+        mimeType = this.mimeType,
+        progress = this.progress
     )
 }

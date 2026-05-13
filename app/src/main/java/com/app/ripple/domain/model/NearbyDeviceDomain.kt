@@ -28,8 +28,8 @@ data class NearbyDeviceDomain(
             lastSeen = System.currentTimeMillis(),
             signalStrength = 100,
             visibility = DeviceVisibility.ONLINE,
-            recentMessage= MessageDomain.mock,
-            allMessages = listOf(MessageDomain.mock, MessageDomain.mock)
+            recentMessage= MessageDomain.mockTextMessage,
+            allMessages = listOf(MessageDomain.mockTextMessage, MessageDomain.mockTextMessage)
         )
     }
 }

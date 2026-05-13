@@ -9,4 +9,6 @@ interface TextMessagePersistenceRepo {
     suspend fun insertReceivedMessage(message: MessageRealm)
 
     suspend fun updateDeliveryStatus(id: Long, status: DeliveryStatus)
+
+    suspend fun updateMessageProgress(id: Long, progress: Float)
 }

@@ -40,4 +40,14 @@ class TextMessageRealmRepo(private val realm: Realm): TextMessagePersistenceRepo
             }
         }
     }
+
+    override suspend fun updateMessageProgress(id: Long, progress: Float) {
+        realm.write {
+            val savedMessage = query(MessageRealm::class, "id == $0", id).first().find()
+
+            savedMessage?.apply {
+                this.progress = progress
+            }
+        }
+    }
 }

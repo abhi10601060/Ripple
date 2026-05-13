@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -49,9 +48,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import com.app.ripple.data.local.realm.model.toTextMessage
 import com.app.ripple.data.nearby.model.ConnectionState
 import com.app.ripple.data.nearby.model.DeviceVisibility
+import com.app.ripple.data.nearby.model.MessageType
 import com.app.ripple.data.nearby.model.NearbyDevice
 import com.app.ripple.presentation.shared.CircularImage
 import com.app.ripple.presentation.shared.Ripple
@@ -132,7 +131,7 @@ fun ChatScreen(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         uri?.let {
-            // TODO: viewModel.sendFile(it)
+            viewModel.sendFileMetadataMessage(uri)
         }
     }
 
@@ -140,7 +139,7 @@ fun ChatScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
-            // TODO: viewModel.sendFile(it)
+            viewModel.sendFileMetadataMessage(uri)
         }
     }
 
@@ -165,7 +164,19 @@ fun ChatScreen(
                 state = chatScrollState
             ) {
                 items(items = allMessages){ message ->
-                    TextMessageItem(textMessage = message, isFromCurrentUser = message.senderId != receiverDeviceDomain?.id)
+                    when(message.messageType){
+                        MessageType.TEXT -> {
+                            TextMessageItem(textMessage = message, isFromCurrentUser = message.senderId != receiverDeviceDomain?.id)
+                        }
+
+                        MessageType.METADATA -> {
+                            FileMessageItem(metadataMessage = message, isFromCurrentUser = message.senderId != receiverDeviceDomain?.id)
+                        }
+
+                        else -> {
+                            TextMessageItem(textMessage = message, isFromCurrentUser = message.senderId != receiverDeviceDomain?.id)
+                        }
+                    }
                 }
             }
         }
@@ -312,7 +323,7 @@ fun ChatScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                  filePickerLauncher.launch("*/*")
+                                filePickerLauncher.launch("*/*")
                                 showAttachmentOptions = false
                             }
                             .padding(vertical = 12.dp),

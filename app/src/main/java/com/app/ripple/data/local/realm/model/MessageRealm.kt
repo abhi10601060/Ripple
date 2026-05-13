@@ -15,7 +15,11 @@ class MessageRealm(
     var receiverId: String,
     var timestamp: Long = System.currentTimeMillis(),
     var _deliveryStatus: String = DeliveryStatus.FAILED.name,
-    var _messageType: String
+    var _messageType: String,
+    var payloadSize: Float = 0f,
+    var fileName: String = "",
+    var mimeType: String = "",
+    var progress: Float = 0f
 ): RealmObject {
 
     val deliveryStatus: DeliveryStatus
@@ -35,6 +39,10 @@ fun MessageRealm.toTextMessage(): Message{
         receiverId = this.receiverId,
         timestamp = this.timestamp,
         deliveryStatus = this.deliveryStatus,
-        messageType =  this.messageType
+        messageType =  this.messageType,
+        payloadSize = this.payloadSize,
+        fileName = this.fileName,
+        mimeType = this.mimeType,
+        progress =  this.progress
     )
 }

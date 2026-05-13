@@ -32,7 +32,10 @@ class NearbyShareRepoImpl(
         nearbyShareManager.disconnectFromDevice(deviceId)
 
     override fun sendTextMessage(message: Message): Flow<Boolean> =
-        nearbyShareManager.sendTextMessage(message)
+        nearbyShareManager.sendMessage(message)
+
+    override fun sendFile(metadataMessage: Message): Flow<Boolean> =
+        nearbyShareManager.queueFileForShare(metadataMessage)
 
     override fun getReceivedMessages(): Flow<List<Message>> =
         nearbyShareManager.receivedMessages
