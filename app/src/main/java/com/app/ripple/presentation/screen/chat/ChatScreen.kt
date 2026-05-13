@@ -1,5 +1,6 @@
 package com.app.ripple.presentation.screen.chat
 
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -52,6 +53,8 @@ import com.app.ripple.data.nearby.model.ConnectionState
 import com.app.ripple.data.nearby.model.DeviceVisibility
 import com.app.ripple.data.nearby.model.MessageType
 import com.app.ripple.data.nearby.model.NearbyDevice
+import com.app.ripple.domain.model.MessageDomain
+import com.app.ripple.presentation.screen.media_preview.MediaPreViewScreen
 import com.app.ripple.presentation.shared.CircularImage
 import com.app.ripple.presentation.shared.Ripple
 import com.app.ripple.presentation.shared.RippleTextField
@@ -81,6 +84,8 @@ fun ChatScreen(
             receiverDeviceDomain?.allMessages ?: listOf()
         }
     }
+
+    var mediaToShow by remember { mutableStateOf<MessageDomain?>(null) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -143,6 +148,8 @@ fun ChatScreen(
         }
     }
 
+//    BackHandler() { }
+
     Box(
         modifier = modifier.fillMaxSize()
             .background(color = DarkBG)
@@ -170,7 +177,9 @@ fun ChatScreen(
                         }
 
                         MessageType.METADATA -> {
-                            FileMessageItem(metadataMessage = message, isFromCurrentUser = message.senderId != receiverDeviceDomain?.id)
+                            FileMessageItem(metadataMessage = message, isFromCurrentUser = message.senderId != receiverDeviceDomain?.id){
+                                mediaToShow = it
+                            }
                         }
 
                         else -> {
@@ -344,6 +353,15 @@ fun ChatScreen(
                     }
                 }
             }
+        }
+
+        mediaToShow?.let {
+            MediaPreViewScreen(
+                modifier = Modifier.fillMaxSize(),
+                message = it,
+                isSentFromCurrentUser = it.senderId != receiverDeviceDomain?.id,
+                onBackClick = {mediaToShow = null}
+            )
         }
     }
 }

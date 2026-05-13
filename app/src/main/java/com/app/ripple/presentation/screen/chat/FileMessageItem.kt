@@ -2,6 +2,7 @@ package com.app.ripple.presentation.screen.chat
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,7 +46,8 @@ import com.app.ripple.util.millisToDateTime
 fun FileMessageItem(
     modifier: Modifier = Modifier,
     metadataMessage: MessageDomain,
-    isFromCurrentUser: Boolean
+    isFromCurrentUser: Boolean,
+    onClick: (metadataMessage: MessageDomain) -> Unit
 ) {
 
     var color by remember { mutableStateOf(if(isFromCurrentUser) Color.Black else Color.White) }
@@ -77,6 +79,9 @@ fun FileMessageItem(
                     .background(color = if (isFromCurrentUser) Color.White else SecondaryDarkBG)
                     .padding(5.dp)
                     .align(Alignment.Center)
+                    .clickable{
+                        if (metadataMessage.progress == 1f) onClick(metadataMessage)
+                    }
                 ) {
                     Icon(
                         modifier = Modifier.border(1.dp, color = color, shape = CircleShape).padding(8.dp).size(40.dp),
@@ -127,5 +132,5 @@ fun FileMessageItem(
 @Preview
 @Composable
 private fun FileMessageItem() {
-    FileMessageItem(modifier = Modifier.fillMaxWidth(), metadataMessage = MessageDomain.mockFileMetadataMessage, isFromCurrentUser = false)
+    FileMessageItem(modifier = Modifier.fillMaxWidth(), metadataMessage = MessageDomain.mockFileMetadataMessage, isFromCurrentUser = false, onClick = {})
 }
